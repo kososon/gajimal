@@ -6,7 +6,7 @@
     <title>Payroll & PPh 21 - PT Multisarana Argo Lestari</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Firebase SDKs (v9/v10 Compatibility Mode) -->
+    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
@@ -310,7 +310,7 @@
                             <p id="slip-ttd-kota-tgl">Pekanbaru, 31 Januari 2026</p>
                             <p class="font-semibold">Direktur,</p>
                             <br><br><br>
-                            <p class="font-bold text-underline" id="slip-nama-direktur">( Nama Direktur )</p>
+                            <p class="font-bold text-underline" id="slip-nama-direktur">( ABDUL HALEK )</p>
                         </div>
                         <div>
                             <p><br></p>
@@ -329,7 +329,7 @@
                     <form onsubmit="saveDirektur(event)" class="space-y-3">
                         <div>
                             <label class="text-xs font-semibold text-slate-600">Nama Direktur</label>
-                            <input type="text" id="dir-nama" class="w-full border rounded p-2 text-sm" required>
+                            <input type="text" id="dir-nama" class="w-full border rounded p-2 text-sm" value="ABDUL HALEK" required>
                         </div>
                         <div>
                             <label class="text-xs font-semibold text-slate-600">Kota Penerbitan Slip</label>
@@ -409,20 +409,6 @@
 
     <!-- Engine Application JavaScript -->
     <script>
-SAYA SUDAH UPDATE DATA DIREKTUR NAMANYA ABDUL HALEK KENAPA PADA CETAK SLIP DIREKTURNYA WILSON ?
-
-
-
-TANPA MERUBAH STRUKTUR AWAL , TOLONG DI UPDATE
-
-Penyebabnya adalah fungsi saveDirektur() sebelumnya hanya menyimpan ke variabel sementara JavaScript di browser, sehingga ketika Anda berpindah halaman atau me-render slip gaji, data tersebut kembali (reset) ke nama default WILSON. Selain itu, data direktur belum dibaca langsung dari database Firebase Firestore secara real-time.
-
-Berikut adalah perbaikan kode JavaScript lengkap tanpa mengubah struktur HTML maupun CSS awal. Perbaikan ini menambahkan penyimpanan langsung ke collection settings di Firebase Firestore dan otomatis memanggil nama Direktur terbaru saat halaman dibuka atau saat mencetak slip gaji.
-
-Bagian Kode JavaScript yang Perlu Diperbarui
-Ganti bagian <script> di dalam file index.html Anda dengan kode berikut:
-
-JavaScript
         // --- 1. FIREBASE CONFIGURATION ---
         const firebaseConfig = {
             apiKey: "AIzaSyAn0GEPGWMEmDslzabkHR2DAnDFctHRjDw",
@@ -538,7 +524,7 @@ JavaScript
                 const dirDoc = await db.collection('settings').doc('direktur').get();
                 if (dirDoc.exists) {
                     globalDirektur = dirDoc.data();
-                    document.getElementById('dir-nama').value = globalDirektur.nama || '';
+                    document.getElementById('dir-nama').value = globalDirektur.nama || 'ABDUL HALEK';
                     document.getElementById('dir-kota').value = globalDirektur.kota || 'Pekanbaru';
                 }
             } catch (err) {
@@ -784,12 +770,10 @@ JavaScript
             document.getElementById('slip-thp-total').innerText = `Rp ${formatRibuan(brutoTHP)}`;
             document.getElementById('slip-nama-karyawan-ttd').innerText = `( ${k.nama} )`;
             
-            // Render Nama Direktur & Kota secara Real-time
             document.getElementById('slip-nama-direktur').innerText = `( ${globalDirektur.nama || 'ABDUL HALEK'} )`;
             document.getElementById('slip-ttd-kota-tgl').innerText = `${globalDirektur.kota || 'Pekanbaru'}, 31 Januari 2026`;
         }
 
-        // --- SIMPAN PERMANEN DATA DIREKTUR KE FIREBASE ---
         async function saveDirektur(e) {
             e.preventDefault();
             const namaDir = document.getElementById('dir-nama').value.trim();
@@ -798,7 +782,6 @@ JavaScript
             globalDirektur.nama = namaDir;
             globalDirektur.kota = kotaDir;
 
-            // Simpan ke Firebase Firestore agar tersimpan permanen
             await db.collection('settings').doc('direktur').set({
                 nama: namaDir,
                 kota: kotaDir
