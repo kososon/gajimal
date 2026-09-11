@@ -14,11 +14,17 @@
     <style>
         /* Format Cetak Slip Half-A4 & Print PDF Rekapitulasi Gaji */
         @media print {
-            body * { visibility: hidden; }
-            .no-print { display: none !important; }
+            body * { 
+                visibility: hidden !important; 
+                display: none !important; 
+            }
 
             /* Cetak Slip Gaji Single Karyawan */
-            #slip-print-area, #slip-print-area * { visibility: visible; }
+            body:not(.printing-rekap) #slip-print-area, 
+            body:not(.printing-rekap) #slip-print-area * { 
+                visibility: visible !important; 
+                display: block !important; 
+            }
             #slip-print-area {
                 position: absolute;
                 left: 0;
@@ -30,22 +36,35 @@
             }
 
             /* Cetak Rekapitulasi Payroll Landscape */
-            body.printing-rekap #slip-print-area { display: none !important; }
-            body.printing-rekap #rekap-pdf-area, body.printing-rekap #rekap-pdf-area * { 
+            body.printing-rekap #rekap-pdf-area, 
+            body.printing-rekap #rekap-pdf-area * { 
                 visibility: visible !important; 
             }
             body.printing-rekap #rekap-pdf-area {
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 100%;
-                padding: 5mm;
-                box-sizing: border-box;
+                display: block !important;
+                position: absolute !important;
+                left: 0 !important;
+                top: 0 !important;
+                width: 100% !important;
+                padding: 5mm !important;
+                box-sizing: border-box !important;
+            }
+
+            body.printing-rekap #rekap-pdf-area table {
+                display: table !important;
+                width: 100% !important;
+            }
+            body.printing-rekap #rekap-pdf-area tr {
+                display: table-row !important;
+            }
+            body.printing-rekap #rekap-pdf-area th,
+            body.printing-rekap #rekap-pdf-area td {
+                display: table-cell !important;
             }
         }
         
         @page {
-            size: landscape;
+            size: A4 landscape;
             margin: 5mm;
         }
     </style>
@@ -369,9 +388,14 @@
                 </div>
             </section>
 
-            <!-- TAB 8: AUDIT LOG -->
+            <!-- TAB 8: AUDIT LOG (DENGAN FITUR HAPUS KHUSUS SUPERUSER) -->
             <section id="tab-audit" class="tab-content hidden">
-                <h3 class="font-bold text-slate-700 mb-4">Audit Log Aktivitas Admin</h3>
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-bold text-slate-700">Audit Log Aktivitas Admin</h3>
+                    <button onclick="clearAllAuditLogs()" id="btn-clear-audit" class="superuser-only hidden bg-red-600 hover:bg-red-700 text-white text-xs px-3 py-2 rounded-lg font-medium transition shadow">
+                        Hapus Semua Log
+                    </button>
+                </div>
                 <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
                     <table class="w-full text-xs text-left">
                         <thead class="bg-slate-50 border-b uppercase text-slate-500">
@@ -390,7 +414,7 @@
         </main>
     </div>
 
-    <!-- AREA CETAK REKAPITULASI PENGGAJIAN (PDF FORMAT SESUAI LAMPIRAN) -->
+    <!-- AREA CETAK REKAPITULASI PENGGAJIAN (PDF FORMAT) -->
     <div id="rekap-pdf-area" class="hidden">
         <div class="text-center mb-3">
             <h1 class="text-sm font-bold uppercase tracking-wide">PT MULTISARANA ARGO LESTARI</h1>
@@ -497,7 +521,7 @@
         let currentUser = null;
         let activeTab = 'dashboard';
         let globalKaryawan = [];
-        let globalPayrollMap = {}; // Penyimpanan Payroll Terpisah Per Periode
+        let globalPayrollMap = {};
         let globalDirektur = { nama: "ABDUL HALEK", kota: "Pekanbaru" };
 
         function getSelectedPeriode() {
@@ -937,7 +961,7 @@
             document.getElementById(`container-dasar-kes-${id}`).style.display = autoKes ? 'none' : 'block';
         }
 
-        // TAMPILAN DATA GAJI BARIS KE-2 (ROW BPJS RAPU & HORIZONTAL)
+        // TAMPILAN DATA GAJI BARIS KE-2 (ROW BPJS RAPI & HORIZONTAL)
         function renderGajiTable() {
             const tbody = document.getElementById('table-gaji-body');
             tbody.innerHTML = '';
@@ -1024,7 +1048,6 @@
                 dasarBpjsKes: autoKes ? gp : cleanNumber(document.getElementById(`dasar-kes-${id}`).value)
             };
 
-            // SIMPAN KE SUBCOLLECTION PERIODE
             await db.collection('karyawan').doc(id).collection('payroll').doc(periode).set(data);
             await logAudit('UPDATE_GAJI', `Update gaji karyawan ID ${id} periode ${periode}`);
             alert(`Data gaji periode ${periode} berhasil disimpan!`);
@@ -1071,7 +1094,7 @@
             document.getElementById('dash-total-pph').innerText = `Rp ${formatRibuan(totalPPhAcc)}`;
         }
 
-        // GENERATE & CETAK REKAP GAJI SESUAI FORMAT LAMPIRAN
+        // PRINT REKAP GAJI PDF TERBUKTI AMAN (NO BLANK)
         function printRekapPDF() {
             const periode = getSelectedPeriode();
             document.getElementById('rekap-periode-title').innerText = periode.toUpperCase();
@@ -1176,10 +1199,13 @@
             `;
 
             document.body.classList.add('printing-rekap');
+            document.getElementById('rekap-pdf-area').classList.remove('hidden');
+
             setTimeout(() => {
                 window.print();
                 document.body.classList.remove('printing-rekap');
-            }, 300);
+                document.getElementById('rekap-pdf-area').classList.add('hidden');
+            }, 200);
         }
 
         async function savePinjaman(e) {
@@ -1300,6 +1326,31 @@
                     `;
                 });
             });
+        }
+
+        // FUNGSI HAPUS SEMUA LOG KHUSUS SUPERUSER
+        async function clearAllAuditLogs() {
+            if (!currentUser || currentUser.role !== 'SUPERUSER') {
+                alert('Akses Ditolak! Hanya Superuser yang dapat menghapus audit log.');
+                return;
+            }
+
+            if (confirm('Apakah Anda yakin ingin menghapus SELURUH riwayat audit log? Tindakan ini bersifat permanen dan tidak dapat dibatalkan.')) {
+                try {
+                    const snap = await db.collection('audit_logs').get();
+                    const batch = db.batch();
+                    snap.forEach(doc => {
+                        batch.delete(doc.ref);
+                    });
+                    await batch.commit();
+
+                    alert('Seluruh audit log berhasil dihapus!');
+                    renderAuditLogs();
+                } catch (error) {
+                    console.error("Gagal menghapus audit log:", error);
+                    alert('Terjadi kesalahan saat menghapus audit log.');
+                }
+            }
         }
 
         function exportToCoretaxCSV() {
