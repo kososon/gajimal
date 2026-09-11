@@ -423,8 +423,9 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // Plafon Maksimal BPJS JP Sesuai Regulasi Kemnaker
+        // Plafon Maksimal Dasar BPJS Sesuai Peraturan Pemerintah
         const MAX_DASAR_BPJS_JP = 10042300; 
+        const MAX_DASAR_BPJS_KES = 12000000; // Cap Maksimal BPJS Kes Rp 12 Juta
 
         let currentUser = null;
         let activeTab = 'dashboard';
@@ -676,7 +677,8 @@
         }
 
         function getDasarBpjsKes(k) {
-            return (k.autoBpjsKes !== false) ? (k.gajiPokok || 0) : (k.dasarBpjsKes || 0);
+            const raw = (k.autoBpjsKes !== false) ? (k.gajiPokok || 0) : (k.dasarBpjsKes || 0);
+            return Math.min(raw, MAX_DASAR_BPJS_KES); // Di-cap maks 12 juta
         }
 
         async function loadGlobalData() {
@@ -859,18 +861,17 @@
                                 <input type="checkbox" id="auto-tk-${k.id}" ${isAutoTk ? 'checked' : ''} onchange="toggleBpjsInputs('${k.id}')">
                                 <label for="auto-tk-${k.id}" class="font-bold text-slate-700">Auto BPJS TK</label>
                             </div>
-                            <!-- Form Isian Manual BPJS TK Lengkap Label -->
                             <div id="container-dasar-tk-${k.id}" style="display: ${isAutoTk ? 'none' : 'block'};" class="space-y-1 bg-slate-50 p-1.5 rounded border">
                                 <div>
                                     <label class="text-[9px] font-bold text-slate-600 block">Base JHT:</label>
                                     <input type="text" value="${formatRibuan(k.dasarJht || 0)}" onkeyup="formatInputRibuan(this)" class="w-24 border rounded p-0.5 text-[10px]" placeholder="Upah JHT" id="dasar-jht-${k.id}">
                                 </div>
                                 <div>
-                                    <label class="text-[9px] font-bold text-slate-600 block">Base JKK:</label>
+                                    <label class="text-[9px] font-bold text-slate-600 block">Base JKK (0.54%):</label>
                                     <input type="text" value="${formatRibuan(k.dasarJkk || 0)}" onkeyup="formatInputRibuan(this)" class="w-24 border rounded p-0.5 text-[10px]" placeholder="Upah JKK" id="dasar-jkk-${k.id}">
                                 </div>
                                 <div>
-                                    <label class="text-[9px] font-bold text-slate-600 block">Base JKM:</label>
+                                    <label class="text-[9px] font-bold text-slate-600 block">Base JKM (0.30%):</label>
                                     <input type="text" value="${formatRibuan(k.dasarJkm || 0)}" onkeyup="formatInputRibuan(this)" class="w-24 border rounded p-0.5 text-[10px]" placeholder="Upah JKM" id="dasar-jkm-${k.id}">
                                 </div>
                                 <div>
@@ -883,7 +884,7 @@
                                 <label for="auto-kes-${k.id}" class="font-bold text-slate-700">Auto BPJS Kes</label>
                             </div>
                             <div id="container-dasar-kes-${k.id}" style="display: ${isAutoKes ? 'none' : 'block'};" class="bg-slate-50 p-1 rounded border mt-0.5">
-                                <label class="text-[9px] font-bold text-slate-600 block">Base BPJS Kes:</label>
+                                <label class="text-[9px] font-bold text-slate-600 block">Base BPJS Kes (Max 12M):</label>
                                 <input type="text" value="${formatRibuan(k.dasarBpjsKes || 0)}" onkeyup="formatInputRibuan(this)" class="w-24 border rounded p-0.5 text-[10px]" placeholder="Upah BPJS Kes" id="dasar-kes-${k.id}">
                             </div>
                         </td>
@@ -932,9 +933,8 @@
                 const tunj = (k.tunjJab || 0) + (k.tunjMakan || 0) + (k.tunjPulsa || 0) + (k.tunjLain || 0);
                 const brutoTHP = gp + tunj;
                 
-                // HANYA JKK (0.24%), JKM (0.30%), DAN BPJS KES (4%) PERUSAHAAN YANG MASUK BRUTO PAJAK
-                // JHT & JP DIBAYAR PERUSAHAAN EKSKLUSIF TIDAK MASUK DALAM KALKULASI BRUTO PAJAK
-                const bpjsKenaPajakPerusahaan = (tk.jkk * 0.0024) + (tk.jkm * 0.0030) + (dasarKes * 0.04);
+                // KALKULASI PERSIS SESUAI ATURAN TERBARU: JKK (0.54%) + JKM (0.30%) + BPJS KES (4% CAP MAX 12M)
+                const bpjsKenaPajakPerusahaan = (tk.jkk * 0.0054) + (tk.jkm * 0.0030) + (dasarKes * 0.04);
                 const brutoAwalTanpaPajak = brutoTHP + bpjsKenaPajakPerusahaan;
                 
                 const calc = calculateGrossUpTER(k.ptkp, brutoAwalTanpaPajak);
@@ -1085,7 +1085,7 @@
                 const gp = k.gajiPokok || 0;
                 const tk = getBpjsTkComponents(k);
                 const dasarKes = getDasarBpjsKes(k);
-                const bpjsPerusahaan = (tk.jkk * 0.0024) + (tk.jkm * 0.0030) + (dasarKes * 0.04);
+                const bpjsPerusahaan = (tk.jkk * 0.0054) + (tk.jkm * 0.0030) + (dasarKes * 0.04);
                 const brutoAwal = gp + (k.tunjJab || 0) + (k.tunjMakan || 0) + (k.tunjPulsa || 0) + (k.tunjLain || 0) + bpjsPerusahaan;
                 const calc = calculateGrossUpTER(k.ptkp, brutoAwal);
                 csvContent += `${k.nik},${k.nama},${k.npwp || ''},${k.ptkp},${calc.brutoPajakFinal},${calc.pph21GrossUp}\n`;
