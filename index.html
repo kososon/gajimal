@@ -29,7 +29,7 @@
                 box-sizing: border-box;
             }
 
-            /* Cetak Rekapitulasi Payroll (Print to PDF Format Terlampir) */
+            /* Cetak Rekapitulasi Payroll Landscape */
             body.printing-rekap #slip-print-area { display: none !important; }
             body.printing-rekap #rekap-pdf-area, body.printing-rekap #rekap-pdf-area * { 
                 visibility: visible !important; 
@@ -45,7 +45,7 @@
         }
         
         @page {
-            size: auto;
+            size: landscape;
             margin: 5mm;
         }
     </style>
@@ -112,9 +112,8 @@
                     <label class="text-xs font-bold text-slate-500 uppercase">Periode Data:</label>
                     <select id="filter-periode-type" onchange="loadGlobalData()" class="border rounded px-3 py-1.5 text-sm bg-slate-50">
                         <option value="monthly">Bulanan</option>
-                        <option value="ytd">Year-to-Date (YTD)</option>
                     </select>
-                    <input type="month" id="filter-month" value="2026-01" onchange="loadGlobalData()" class="border rounded px-3 py-1.5 text-sm bg-slate-50">
+                    <input type="month" id="filter-month" value="2026-01" onchange="loadGlobalData()" class="border rounded px-3 py-1.5 text-sm bg-slate-50 font-bold text-blue-600">
                 </div>
                 
                 <div class="flex items-center gap-2">
@@ -127,7 +126,6 @@
 
             <!-- TAB 1: DASHBOARD -->
             <section id="tab-dashboard" class="tab-content">
-                <!-- 5 Card Ringkasan Finansial -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
                     <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
                         <p class="text-xs font-semibold text-slate-500 uppercase">Total Karyawan</p>
@@ -197,25 +195,24 @@
                 </div>
             </section>
 
-            <!-- TAB 3: DATA GAJI & THR -->
+            <!-- TAB 3: DATA GAJI & THR (SUSUNAN ROW KE-2 BPJS) -->
             <section id="tab-gaji" class="tab-content hidden">
                 <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-                    <h3 class="font-bold text-slate-700 mb-4">Input & Edit Gaji Bulanan (Auto-Filled)</h3>
+                    <h3 class="font-bold text-slate-700 mb-4">Input & Edit Gaji Bulanan Per Periode</h3>
                     <div class="overflow-x-auto">
-                        <table class="w-full text-xs text-left">
-                            <thead class="bg-slate-50 uppercase text-slate-500 border-b">
+                        <table class="w-full text-xs text-left border-collapse">
+                            <thead class="bg-slate-100 uppercase text-slate-600 border-b font-bold">
                                 <tr>
-                                    <th class="p-2">Karyawan</th>
-                                    <th class="p-2">Gaji Pokok</th>
-                                    <th class="p-2">T. Jabatan</th>
-                                    <th class="p-2">T. Makan</th>
-                                    <th class="p-2">T. Pulsa/Kdr</th>
-                                    <th class="p-2">T. Lain-Lain</th>
-                                    <th class="p-2">Gratifikasi</th>
-                                    <th class="p-2">THR</th>
-                                    <th class="p-2">Pot. Gaji</th>
-                                    <th class="p-2">Config BPJS TK & Kes</th>
-                                    <th class="p-2">Aksi</th>
+                                    <th class="p-2 border">KARYAWAN</th>
+                                    <th class="p-2 border">GAJI POKOK</th>
+                                    <th class="p-2 border">T. JABATAN</th>
+                                    <th class="p-2 border">T. MAKAN</th>
+                                    <th class="p-2 border">T. PULSA/KDR</th>
+                                    <th class="p-2 border">T. LAIN-LAIN</th>
+                                    <th class="p-2 border">GRATIFIKASI</th>
+                                    <th class="p-2 border">THR</th>
+                                    <th class="p-2 border">POT. GAJI</th>
+                                    <th class="p-2 border text-center">AKSI</th>
                                 </tr>
                             </thead>
                             <tbody id="table-gaji-body"></tbody>
@@ -393,15 +390,15 @@
         </main>
     </div>
 
-    <!-- AREA CETAK REKAPITULASI PENGGAJIAN (PRINT TO PDF FORMAT) -->
+    <!-- AREA CETAK REKAPITULASI PENGGAJIAN (PDF FORMAT SESUAI LAMPIRAN) -->
     <div id="rekap-pdf-area" class="hidden">
         <div class="text-center mb-3">
-            <h1 class="text-base font-bold uppercase tracking-wide">PT MULTISARANA ARGO LESTARI</h1>
-            <h2 class="text-xs font-semibold">REKAPITULASI PAYROLL & IURAN BPJS - PERIODE JANUARI 2026</h2>
+            <h1 class="text-sm font-bold uppercase tracking-wide">PT MULTISARANA ARGO LESTARI</h1>
+            <h2 class="text-xs font-semibold">REKAPITULASI PAYROLL & IURAN BPJS - PERIODE <span id="rekap-periode-title">JANUARI 2026</span></h2>
         </div>
-        <table class="w-full text-[9px] border-collapse border border-black text-center">
+        <table class="w-full text-[8px] border-collapse border border-black text-center">
             <thead>
-                <tr class="bg-slate-200 border-b border-black">
+                <tr class="bg-slate-200 border-b border-black font-bold">
                     <th rowspan="2" class="border border-black p-1">Nama</th>
                     <th rowspan="2" class="border border-black p-1">TOTAL GAJI</th>
                     <th rowspan="2" class="border border-black p-1">Gaji Lapor BPJS TK</th>
@@ -412,7 +409,7 @@
                     <th colspan="5" class="border border-black p-1">IURAN BPJS PERUSAHAAN</th>
                     <th colspan="3" class="border border-black p-1">IURAN BPJS KARYAWAN</th>
                 </tr>
-                <tr class="bg-slate-100 border-b border-black">
+                <tr class="bg-slate-100 border-b border-black font-bold">
                     <th class="border border-black p-0.5">Tunj Jabatan</th>
                     <th class="border border-black p-0.5">Tunj PBT</th>
                     <th class="border border-black p-0.5">Tunj Makan</th>
@@ -494,14 +491,18 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // Limit Atas BPJS Sesuai Peraturan Pemerintah
         const MAX_DASAR_BPJS_JP = 10042300; 
         const MAX_DASAR_BPJS_KES = 12000000;
 
         let currentUser = null;
         let activeTab = 'dashboard';
         let globalKaryawan = [];
+        let globalPayrollMap = {}; // Penyimpanan Payroll Terpisah Per Periode
         let globalDirektur = { nama: "ABDUL HALEK", kota: "Pekanbaru" };
+
+        function getSelectedPeriode() {
+            return document.getElementById('filter-month').value || '2026-01';
+        }
 
         function getTerRateFull(category, bruto) {
             if (category === 'A') {
@@ -728,9 +729,17 @@
             }
         }
 
-        function getBpjsTkComponents(k) {
-            const gp = k.gajiPokok || 0;
-            if (k.autoBpjsTk !== false) {
+        function getPayrollData(karyId) {
+            return globalPayrollMap[karyId] || {
+                gajiPokok: 0, tunjJab: 0, tunjMakan: 0, tunjPulsa: 0, tunjLain: 0, gratifikasi: 0, thr: 0, potGaji: 0,
+                autoBpjsTk: true, autoBpjsKes: true, dasarJht: 0, dasarJkk: 0, dasarJkm: 0, dasarJp: 0, dasarBpjsKes: 0
+            };
+        }
+
+        function getBpjsTkComponents(karyId) {
+            const p = getPayrollData(karyId);
+            const gp = p.gajiPokok || 0;
+            if (p.autoBpjsTk !== false) {
                 return {
                     jht: gp,
                     jkk: gp,
@@ -739,22 +748,33 @@
                 };
             } else {
                 return {
-                    jht: k.dasarJht || 0,
-                    jkk: k.dasarJkk || 0,
-                    jkm: k.dasarJkm || 0,
-                    jp: Math.min(k.dasarJp || 0, MAX_DASAR_BPJS_JP)
+                    jht: p.dasarJht || 0,
+                    jkk: p.dasarJkk || 0,
+                    jkm: p.dasarJkm || 0,
+                    jp: Math.min(p.dasarJp || 0, MAX_DASAR_BPJS_JP)
                 };
             }
         }
 
-        function getDasarBpjsKes(k) {
-            const raw = (k.autoBpjsKes !== false) ? (k.gajiPokok || 0) : (k.dasarBpjsKes || 0);
+        function getDasarBpjsKes(karyId) {
+            const p = getPayrollData(karyId);
+            const raw = (p.autoBpjsKes !== false) ? (p.gajiPokok || 0) : (p.dasarBpjsKes || 0);
             return Math.min(raw, MAX_DASAR_BPJS_KES);
         }
 
+        // LOAD DATA TERPISAH SESUAI PERIODE BULAN
         async function loadGlobalData() {
+            const periode = getSelectedPeriode();
             const karySnap = await db.collection('karyawan').get();
             globalKaryawan = karySnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+            globalPayrollMap = {};
+            for (let k of globalKaryawan) {
+                const pSnap = await db.collection('karyawan').doc(k.id).collection('payroll').doc(periode).get();
+                if (pSnap.exists) {
+                    globalPayrollMap[k.id] = pSnap.data();
+                }
+            }
 
             try {
                 const dirDoc = await db.collection('settings').doc('direktur').get();
@@ -784,10 +804,11 @@
             let totalSetorBpjsKes = 0;
 
             globalKaryawan.forEach(k => {
-                const gp = k.gajiPokok || 0;
-                const tk = getBpjsTkComponents(k);
-                const dasarKes = getDasarBpjsKes(k);
-                const tunj = (k.tunjJab || 0) + (k.tunjMakan || 0) + (k.tunjPulsa || 0) + (k.tunjLain || 0);
+                const p = getPayrollData(k.id);
+                const gp = p.gajiPokok || 0;
+                const tk = getBpjsTkComponents(k.id);
+                const dasarKes = getDasarBpjsKes(k.id);
+                const tunj = (p.tunjJab || 0) + (p.tunjMakan || 0) + (p.tunjPulsa || 0) + (p.tunjLain || 0);
                 
                 const bpjsKesPribadi = dasarKes * 0.01;
                 const bpjsTkPribadi = (tk.jht * 0.02) + (tk.jp * 0.01);
@@ -870,18 +891,6 @@
                 await db.collection('karyawan').doc(editId).update(data);
                 await logAudit('EDIT_KARYAWAN', `Mengubah profil karyawan: ${data.nama}`);
             } else {
-                data.gajiPokok = 0;
-                data.tunjJab = 0;
-                data.tunjMakan = 0;
-                data.tunjPulsa = 0;
-                data.tunjLain = 0;
-                data.autoBpjsTk = true;
-                data.autoBpjsKes = true;
-                data.dasarJht = 0;
-                data.dasarJkk = 0;
-                data.dasarJkm = 0;
-                data.dasarJp = 0;
-                data.dasarBpjsKes = 0;
                 await db.collection('karyawan').add(data);
                 await logAudit('TAMBAH_KARYAWAN', `Menambah karyawan baru: ${data.nama}`);
             }
@@ -924,67 +933,75 @@
             const autoTk = document.getElementById(`auto-tk-${id}`).checked;
             const autoKes = document.getElementById(`auto-kes-${id}`).checked;
 
-            document.getElementById(`container-dasar-tk-${id}`).style.display = autoTk ? 'none' : 'block';
+            document.getElementById(`container-dasar-tk-${id}`).style.display = autoTk ? 'none' : 'flex';
             document.getElementById(`container-dasar-kes-${id}`).style.display = autoKes ? 'none' : 'block';
         }
 
+        // TAMPILAN DATA GAJI BARIS KE-2 (ROW BPJS RAPU & HORIZONTAL)
         function renderGajiTable() {
             const tbody = document.getElementById('table-gaji-body');
             tbody.innerHTML = '';
+
             globalKaryawan.forEach(k => {
-                const isAutoTk = (k.autoBpjsTk !== false);
-                const isAutoKes = (k.autoBpjsKes !== false);
+                const p = getPayrollData(k.id);
+                const isAutoTk = (p.autoBpjsTk !== false);
+                const isAutoKes = (p.autoBpjsKes !== false);
 
                 tbody.innerHTML += `
-                    <tr class="border-b bg-white">
-                        <td class="p-2 font-bold">${k.nama}</td>
-                        <td class="p-2"><input type="text" value="${formatRibuan(k.gajiPokok || 0)}" onkeyup="formatInputRibuan(this)" class="w-24 border rounded p-1" id="gp-${k.id}"></td>
-                        <td class="p-2"><input type="text" value="${formatRibuan(k.tunjJab || 0)}" onkeyup="formatInputRibuan(this)" class="w-20 border rounded p-1" id="tj-${k.id}"></td>
-                        <td class="p-2"><input type="text" value="${formatRibuan(k.tunjMakan || 0)}" onkeyup="formatInputRibuan(this)" class="w-20 border rounded p-1" id="tm-${k.id}"></td>
-                        <td class="p-2"><input type="text" value="${formatRibuan(k.tunjPulsa || 0)}" onkeyup="formatInputRibuan(this)" class="w-20 border rounded p-1" id="tp-${k.id}"></td>
-                        <td class="p-2"><input type="text" value="${formatRibuan(k.tunjLain || 0)}" onkeyup="formatInputRibuan(this)" class="w-20 border rounded p-1 text-blue-600" id="tl-${k.id}"></td>
-                        <td class="p-2"><input type="text" value="0" onkeyup="formatInputRibuan(this)" class="w-20 border rounded p-1" id="gr-${k.id}"></td>
-                        <td class="p-2"><input type="text" value="0" onkeyup="formatInputRibuan(this)" class="w-20 border rounded p-1" id="thr-${k.id}"></td>
-                        <td class="p-2"><input type="text" value="0" onkeyup="formatInputRibuan(this)" class="w-20 border rounded p-1 text-red-600" id="pot-${k.id}"></td>
-                        <td class="p-2 space-y-1">
-                            <div class="flex items-center gap-1 text-[10px]">
-                                <input type="checkbox" id="auto-tk-${k.id}" ${isAutoTk ? 'checked' : ''} onchange="toggleBpjsInputs('${k.id}')">
-                                <label for="auto-tk-${k.id}" class="font-bold text-slate-700">Auto BPJS TK</label>
-                            </div>
-                            <div id="container-dasar-tk-${k.id}" style="display: ${isAutoTk ? 'none' : 'block'};" class="space-y-1 bg-slate-50 p-1.5 rounded border">
-                                <div>
-                                    <label class="text-[9px] font-bold text-slate-600 block">Base JHT:</label>
-                                    <input type="text" value="${formatRibuan(k.dasarJht || 0)}" onkeyup="formatInputRibuan(this)" class="w-24 border rounded p-0.5 text-[10px]" placeholder="Upah JHT" id="dasar-jht-${k.id}">
+                    <!-- ROW 1: INPUT ANGKA GAJI -->
+                    <tr class="border-t bg-white font-semibold">
+                        <td class="p-2 border font-bold text-slate-800">${k.nama}</td>
+                        <td class="p-2 border"><input type="text" value="${formatRibuan(p.gajiPokok || 0)}" onkeyup="formatInputRibuan(this)" class="w-24 border rounded p-1 text-right" id="gp-${k.id}"></td>
+                        <td class="p-2 border"><input type="text" value="${formatRibuan(p.tunjJab || 0)}" onkeyup="formatInputRibuan(this)" class="w-20 border rounded p-1 text-right" id="tj-${k.id}"></td>
+                        <td class="p-2 border"><input type="text" value="${formatRibuan(p.tunjMakan || 0)}" onkeyup="formatInputRibuan(this)" class="w-20 border rounded p-1 text-right" id="tm-${k.id}"></td>
+                        <td class="p-2 border"><input type="text" value="${formatRibuan(p.tunjPulsa || 0)}" onkeyup="formatInputRibuan(this)" class="w-20 border rounded p-1 text-right" id="tp-${k.id}"></td>
+                        <td class="p-2 border"><input type="text" value="${formatRibuan(p.tunjLain || 0)}" onkeyup="formatInputRibuan(this)" class="w-20 border rounded p-1 text-right text-blue-600" id="tl-${k.id}"></td>
+                        <td class="p-2 border"><input type="text" value="${formatRibuan(p.gratifikasi || 0)}" onkeyup="formatInputRibuan(this)" class="w-20 border rounded p-1 text-right" id="gr-${k.id}"></td>
+                        <td class="p-2 border"><input type="text" value="${formatRibuan(p.thr || 0)}" onkeyup="formatInputRibuan(this)" class="w-20 border rounded p-1 text-right" id="thr-${k.id}"></td>
+                        <td class="p-2 border"><input type="text" value="${formatRibuan(p.potGaji || 0)}" onkeyup="formatInputRibuan(this)" class="w-20 border rounded p-1 text-right text-red-600" id="pot-${k.id}"></td>
+                        <td class="p-2 border text-center align-middle" rowspan="2">
+                            <button onclick="saveGaji('${k.id}')" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-blue-700 shadow transition">Simpan</button>
+                        </td>
+                    </tr>
+                    <!-- ROW 2: CONFIG BPJS TK & KES HORIZONTAL -->
+                    <tr class="border-b bg-slate-50 text-[11px]">
+                        <td colspan="9" class="p-2.5 border">
+                            <div class="flex flex-wrap items-center gap-6">
+                                <div class="flex items-center gap-3">
+                                    <div class="flex items-center gap-1 font-bold text-slate-700">
+                                        <input type="checkbox" id="auto-tk-${k.id}" ${isAutoTk ? 'checked' : ''} onchange="toggleBpjsInputs('${k.id}')">
+                                        <label for="auto-tk-${k.id}">Auto BPJS TK</label>
+                                    </div>
+                                    <div id="container-dasar-tk-${k.id}" style="display: ${isAutoTk ? 'none' : 'flex'};" class="items-center gap-2 bg-white p-1 rounded border">
+                                        <span class="text-slate-500">Base JHT:</span>
+                                        <input type="text" value="${formatRibuan(p.dasarJht || 0)}" onkeyup="formatInputRibuan(this)" class="w-20 border rounded p-0.5 text-right" id="dasar-jht-${k.id}">
+                                        <span class="text-slate-500">JKK:</span>
+                                        <input type="text" value="${formatRibuan(p.dasarJkk || 0)}" onkeyup="formatInputRibuan(this)" class="w-20 border rounded p-0.5 text-right" id="dasar-jkk-${k.id}">
+                                        <span class="text-slate-500">JKM:</span>
+                                        <input type="text" value="${formatRibuan(p.dasarJkm || 0)}" onkeyup="formatInputRibuan(this)" class="w-20 border rounded p-0.5 text-right" id="dasar-jkm-${k.id}">
+                                        <span class="text-slate-500">JP:</span>
+                                        <input type="text" value="${formatRibuan(p.dasarJp || 0)}" onkeyup="formatInputRibuan(this)" class="w-20 border rounded p-0.5 text-right" id="dasar-jp-${k.id}">
+                                    </div>
                                 </div>
-                                <div>
-                                    <label class="text-[9px] font-bold text-slate-600 block">Base JKK (0.54%):</label>
-                                    <input type="text" value="${formatRibuan(k.dasarJkk || 0)}" onkeyup="formatInputRibuan(this)" class="w-24 border rounded p-0.5 text-[10px]" placeholder="Upah JKK" id="dasar-jkk-${k.id}">
+                                <div class="flex items-center gap-3 border-l pl-4">
+                                    <div class="flex items-center gap-1 font-bold text-slate-700">
+                                        <input type="checkbox" id="auto-kes-${k.id}" ${isAutoKes ? 'checked' : ''} onchange="toggleBpjsInputs('${k.id}')">
+                                        <label for="auto-kes-${k.id}">Auto BPJS Kes</label>
+                                    </div>
+                                    <div id="container-dasar-kes-${k.id}" style="display: ${isAutoKes ? 'none' : 'block'};" class="bg-white p-1 rounded border">
+                                        <span class="text-slate-500">Base Kes (Max 12M):</span>
+                                        <input type="text" value="${formatRibuan(p.dasarBpjsKes || 0)}" onkeyup="formatInputRibuan(this)" class="w-24 border rounded p-0.5 text-right" id="dasar-kes-${k.id}">
+                                    </div>
                                 </div>
-                                <div>
-                                    <label class="text-[9px] font-bold text-slate-600 block">Base JKM (0.30%):</label>
-                                    <input type="text" value="${formatRibuan(k.dasarJkm || 0)}" onkeyup="formatInputRibuan(this)" class="w-24 border rounded p-0.5 text-[10px]" placeholder="Upah JKM" id="dasar-jkm-${k.id}">
-                                </div>
-                                <div>
-                                    <label class="text-[9px] font-bold text-slate-600 block">Base JP:</label>
-                                    <input type="text" value="${formatRibuan(k.dasarJp || 0)}" onkeyup="formatInputRibuan(this)" class="w-24 border rounded p-0.5 text-[10px]" placeholder="Upah JP" id="dasar-jp-${k.id}">
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-1 text-[10px] pt-1 border-t">
-                                <input type="checkbox" id="auto-kes-${k.id}" ${isAutoKes ? 'checked' : ''} onchange="toggleBpjsInputs('${k.id}')">
-                                <label for="auto-kes-${k.id}" class="font-bold text-slate-700">Auto BPJS Kes</label>
-                            </div>
-                            <div id="container-dasar-kes-${k.id}" style="display: ${isAutoKes ? 'none' : 'block'};" class="bg-slate-50 p-1 rounded border mt-0.5">
-                                <label class="text-[9px] font-bold text-slate-600 block">Base BPJS Kes (Max 12M):</label>
-                                <input type="text" value="${formatRibuan(k.dasarBpjsKes || 0)}" onkeyup="formatInputRibuan(this)" class="w-24 border rounded p-0.5 text-[10px]" placeholder="Upah BPJS Kes" id="dasar-kes-${k.id}">
                             </div>
                         </td>
-                        <td class="p-2"><button onclick="saveGaji('${k.id}')" class="bg-blue-600 text-white px-2 py-1 rounded text-xs font-semibold hover:bg-blue-700">Simpan</button></td>
                     </tr>
                 `;
             });
         }
 
         async function saveGaji(id) {
+            const periode = getSelectedPeriode();
             const autoTk = document.getElementById(`auto-tk-${id}`).checked;
             const autoKes = document.getElementById(`auto-kes-${id}`).checked;
             const gp = cleanNumber(document.getElementById(`gp-${id}`).value);
@@ -995,6 +1012,9 @@
                 tunjMakan: cleanNumber(document.getElementById(`tm-${id}`).value),
                 tunjPulsa: cleanNumber(document.getElementById(`tp-${id}`).value),
                 tunjLain: cleanNumber(document.getElementById(`tl-${id}`).value),
+                gratifikasi: cleanNumber(document.getElementById(`gr-${id}`).value),
+                thr: cleanNumber(document.getElementById(`thr-${id}`).value),
+                potGaji: cleanNumber(document.getElementById(`pot-${id}`).value),
                 autoBpjsTk: autoTk,
                 autoBpjsKes: autoKes,
                 dasarJht: autoTk ? gp : cleanNumber(document.getElementById(`dasar-jht-${id}`).value),
@@ -1004,9 +1024,10 @@
                 dasarBpjsKes: autoKes ? gp : cleanNumber(document.getElementById(`dasar-kes-${id}`).value)
             };
 
-            await db.collection('karyawan').doc(id).update(data);
-            await logAudit('UPDATE_GAJI', `Mengubah komponen gaji & BPJS ID karyawan: ${id}`);
-            alert('Data gaji berhasil diperbarui!');
+            // SIMPAN KE SUBCOLLECTION PERIODE
+            await db.collection('karyawan').doc(id).collection('payroll').doc(periode).set(data);
+            await logAudit('UPDATE_GAJI', `Update gaji karyawan ID ${id} periode ${periode}`);
+            alert(`Data gaji periode ${periode} berhasil disimpan!`);
             loadGlobalData();
         }
 
@@ -1017,10 +1038,11 @@
             let totalPPhAcc = 0;
 
             globalKaryawan.forEach(k => {
-                const gp = k.gajiPokok || 0;
-                const tk = getBpjsTkComponents(k);
-                const dasarKes = getDasarBpjsKes(k);
-                const tunj = (k.tunjJab || 0) + (k.tunjMakan || 0) + (k.tunjPulsa || 0) + (k.tunjLain || 0);
+                const p = getPayrollData(k.id);
+                const gp = p.gajiPokok || 0;
+                const tk = getBpjsTkComponents(k.id);
+                const dasarKes = getDasarBpjsKes(k.id);
+                const tunj = (p.tunjJab || 0) + (p.tunjMakan || 0) + (p.tunjPulsa || 0) + (p.tunjLain || 0);
                 const brutoTHP = gp + tunj;
                 
                 const bpjsKenaPajakPerusahaan = (tk.jkk * 0.0054) + (tk.jkm * 0.0030) + (dasarKes * 0.04);
@@ -1049,8 +1071,11 @@
             document.getElementById('dash-total-pph').innerText = `Rp ${formatRibuan(totalPPhAcc)}`;
         }
 
-        // --- FUNGSIONALITAS GENERATE TABEL PRINT REKAP GAJI PDF ---
+        // GENERATE & CETAK REKAP GAJI SESUAI FORMAT LAMPIRAN
         function printRekapPDF() {
+            const periode = getSelectedPeriode();
+            document.getElementById('rekap-periode-title').innerText = periode.toUpperCase();
+
             const tbody = document.getElementById('rekap-pdf-body');
             const tfoot = document.getElementById('rekap-pdf-foot');
             tbody.innerHTML = '';
@@ -1061,30 +1086,28 @@
             let sumJhtKary = 0, sumJpKary = 0, sumKesKary = 0;
 
             globalKaryawan.forEach(k => {
-                const gp = k.gajiPokok || 0;
-                const tk = getBpjsTkComponents(k);
-                const dasarKes = getDasarBpjsKes(k);
-                const tj = k.tunjJab || 0;
-                const tpbt = k.tunjPulsa || 0;
-                const tm = k.tunjMakan || 0;
-                const tl = k.tunjLain || 0;
+                const p = getPayrollData(k.id);
+                const gp = p.gajiPokok || 0;
+                const tk = getBpjsTkComponents(k.id);
+                const dasarKes = getDasarBpjsKes(k.id);
+                const tj = p.tunjJab || 0;
+                const tpbt = p.tunjPulsa || 0;
+                const tm = p.tunjMakan || 0;
+                const tl = p.tunjLain || 0;
 
                 const totalAllow = tj + tpbt + tm + tl;
                 const totalGaji = gp + totalAllow;
 
-                // Hitung Iuran Perusahaan
                 const jkkP = tk.jkk * 0.0054;
                 const jhtP = tk.jht * 0.037;
                 const jpP = tk.jp * 0.02;
                 const jkmP = tk.jkm * 0.0030;
                 const kesP = dasarKes * 0.04;
 
-                // Hitung Iuran Karyawan
                 const jhtK = tk.jht * 0.02;
                 const jpK = tk.jp * 0.01;
                 const kesK = dasarKes * 0.01;
 
-                // Akumulasi Total
                 sumTotalGaji += totalGaji;
                 sumLaporTk += tk.jht;
                 sumLaporKes += dasarKes;
@@ -1153,8 +1176,10 @@
             `;
 
             document.body.classList.add('printing-rekap');
-            window.print();
-            document.body.classList.remove('printing-rekap');
+            setTimeout(() => {
+                window.print();
+                document.body.classList.remove('printing-rekap');
+            }, 300);
         }
 
         async function savePinjaman(e) {
@@ -1212,10 +1237,11 @@
             const k = globalKaryawan.find(item => item.id === id);
             if (!k) return;
 
-            const gp = k.gajiPokok || 0;
-            const tk = getBpjsTkComponents(k);
-            const dasarKes = getDasarBpjsKes(k);
-            const tunj = (k.tunjJab || 0) + (k.tunjMakan || 0) + (k.tunjPulsa || 0) + (k.tunjLain || 0);
+            const p = getPayrollData(k.id);
+            const gp = p.gajiPokok || 0;
+            const tk = getBpjsTkComponents(k.id);
+            const dasarKes = getDasarBpjsKes(k.id);
+            const tunj = (p.tunjJab || 0) + (p.tunjMakan || 0) + (p.tunjPulsa || 0) + (p.tunjLain || 0);
             
             const bpjsKes = dasarKes * 0.01;
             const bpjsJht = tk.jht * 0.02;
@@ -1279,18 +1305,19 @@
         function exportToCoretaxCSV() {
             let csvContent = "data:text/csv;charset=utf-8,NIK,NAMA,NPWP,STATUS_PTKP,BRUTO_PAJAK_GROSSUP,PPH21_TER\n";
             globalKaryawan.forEach(k => {
-                const gp = k.gajiPokok || 0;
-                const tk = getBpjsTkComponents(k);
-                const dasarKes = getDasarBpjsKes(k);
+                const p = getPayrollData(k.id);
+                const gp = p.gajiPokok || 0;
+                const tk = getBpjsTkComponents(k.id);
+                const dasarKes = getDasarBpjsKes(k.id);
                 const bpjsPerusahaan = (tk.jkk * 0.0054) + (tk.jkm * 0.0030) + (dasarKes * 0.04);
-                const brutoAwal = gp + (k.tunjJab || 0) + (k.tunjMakan || 0) + (k.tunjPulsa || 0) + (k.tunjLain || 0) + bpjsPerusahaan;
+                const brutoAwal = gp + (p.tunjJab || 0) + (p.tunjMakan || 0) + (p.tunjPulsa || 0) + (p.tunjLain || 0) + bpjsPerusahaan;
                 const calc = calculateGrossUpTER(k.ptkp, brutoAwal);
                 csvContent += `${k.nik},${k.nama},${k.npwp || ''},${k.ptkp},${calc.brutoPajakFinal},${calc.pph21GrossUp}\n`;
             });
             const encodedUri = encodeURI(csvContent);
             const link = document.createElement("a");
             link.setAttribute("href", encodedUri);
-            link.setAttribute("download", `Coretax_PPh21_PT_MAL_2026.csv`);
+            link.setAttribute("download", `Coretax_PPh21_PT_MAL_${getSelectedPeriode()}.csv`);
             document.body.appendChild(link);
             link.click();
         }
