@@ -245,7 +245,7 @@
                                     <th class="p-3">Kategori TER</th>
                                     <th class="p-3">Bruto THP</th>
                                     <th class="p-3">BPJS Perusahaan</th>
-                                    <th class="p-3">Bruto Pajak</th>
+                                    <th class="p-3">Bruto Pajak (Gross-Up)</th>
                                     <th class="p-3">Tarif TER</th>
                                     <th class="p-3">PPh 21 (Gross-Up)</th>
                                 </tr>
@@ -425,13 +425,167 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // Application Global States
+        // Global Application States
         let currentUser = null;
         let activeTab = 'dashboard';
         let globalKaryawan = [];
         let globalDirektur = { nama: "ABDUL HALEK", kota: "Pekanbaru" };
 
-        // --- 2. AUTHENTICATION LOGIC ---
+        // --- 2. TABEL RESMI PMK 168/2023 (FULL TER A, B, C S.D. 34%) ---
+        function getTerRateFull(category, bruto) {
+            if (category === 'A') {
+                if (bruto <= 5400000) return 0;
+                if (bruto <= 5650000) return 0.0025;
+                if (bruto <= 5950000) return 0.005;
+                if (bruto <= 6300000) return 0.0075;
+                if (bruto <= 6750000) return 0.01;
+                if (bruto <= 7500000) return 0.0125;
+                if (bruto <= 8550000) return 0.015;
+                if (bruto <= 9650000) return 0.0175;
+                if (bruto <= 10050000) return 0.02;
+                if (bruto <= 10350000) return 0.0225;
+                if (bruto <= 10700000) return 0.025;
+                if (bruto <= 11050000) return 0.03;
+                if (bruto <= 11600000) return 0.035;
+                if (bruto <= 12500000) return 0.04;
+                if (bruto <= 13750000) return 0.05;
+                if (bruto <= 15100000) return 0.06;
+                if (bruto <= 16950000) return 0.07;
+                if (bruto <= 19750000) return 0.08;
+                if (bruto <= 24150000) return 0.09;
+                if (bruto <= 26450000) return 0.10;
+                if (bruto <= 28000000) return 0.11;
+                if (bruto <= 30050000) return 0.12;
+                if (bruto <= 32400000) return 0.13;
+                if (bruto <= 35400000) return 0.14;
+                if (bruto <= 39100000) return 0.15;
+                if (bruto <= 43850000) return 0.16;
+                if (bruto <= 47800000) return 0.17;
+                if (bruto <= 51400000) return 0.18;
+                if (bruto <= 56300000) return 0.19;
+                if (bruto <= 62200000) return 0.20;
+                if (bruto <= 65050000) return 0.21;
+                if (bruto <= 75300000) return 0.22;
+                if (bruto <= 89700000) return 0.23;
+                if (bruto <= 104200000) return 0.24;
+                if (bruto <= 122200000) return 0.25;
+                if (bruto <= 144400000) return 0.26;
+                if (bruto <= 178700000) return 0.27;
+                if (bruto <= 231500000) return 0.28;
+                if (bruto <= 316100000) return 0.29;
+                if (bruto <= 462700000) return 0.30;
+                if (bruto <= 622000000) return 0.31;
+                if (bruto <= 712200000) return 0.32;
+                if (bruto <= 1400700000) return 0.33;
+                return 0.34;
+            } else if (category === 'B') {
+                if (bruto <= 6200000) return 0;
+                if (bruto <= 6500000) return 0.0025;
+                if (bruto <= 6850000) return 0.005;
+                if (bruto <= 7300000) return 0.0075;
+                if (bruto <= 7800000) return 0.01;
+                if (bruto <= 8900000) return 0.015;
+                if (bruto <= 9800000) return 0.02;
+                if (bruto <= 10500000) return 0.025;
+                if (bruto <= 11200000) return 0.03;
+                if (bruto <= 12000000) return 0.04;
+                if (bruto <= 13150000) return 0.05;
+                if (bruto <= 14550000) return 0.06;
+                if (bruto <= 16100000) return 0.07;
+                if (bruto <= 18250000) return 0.08;
+                if (bruto <= 21150000) return 0.09;
+                if (bruto <= 25050000) return 0.10;
+                if (bruto <= 27300000) return 0.11;
+                if (bruto <= 29100000) return 0.12;
+                if (bruto <= 31200000) return 0.13;
+                if (bruto <= 33800000) return 0.14;
+                if (bruto <= 37000000) return 0.15;
+                if (bruto <= 41000000) return 0.16;
+                if (bruto <= 45300000) return 0.17;
+                if (bruto <= 49300000) return 0.18;
+                if (bruto <= 53900000) return 0.19;
+                if (bruto <= 59600000) return 0.20;
+                if (bruto <= 68400000) return 0.21;
+                if (bruto <= 82000000) return 0.22;
+                if (bruto <= 97800000) return 0.23;
+                if (bruto <= 115200000) return 0.24;
+                if (bruto <= 136100000) return 0.25;
+                if (bruto <= 169700000) return 0.26;
+                if (bruto <= 221000000) return 0.27;
+                if (bruto <= 30200000) return 0.28;
+                if (bruto <= 441900000) return 0.29;
+                if (bruto <= 593800000) return 0.30;
+                if (bruto <= 679900000) return 0.31;
+                if (bruto <= 1337400000) return 0.32;
+                if (bruto <= 1337500000) return 0.33;
+                return 0.34;
+            } else {
+                if (bruto <= 6600000) return 0;
+                if (bruto <= 6950000) return 0.0025;
+                if (bruto <= 7350000) return 0.005;
+                if (bruto <= 7800000) return 0.0075;
+                if (bruto <= 8350000) return 0.01;
+                if (bruto <= 9450000) return 0.015;
+                if (bruto <= 10350000) return 0.02;
+                if (bruto <= 11150000) return 0.025;
+                if (bruto <= 11950000) return 0.03;
+                if (bruto <= 12800000) return 0.04;
+                if (bruto <= 14100000) return 0.05;
+                if (bruto <= 15550000) return 0.06;
+                if (bruto <= 17200000) return 0.07;
+                if (bruto <= 19500000) return 0.08;
+                if (bruto <= 22550000) return 0.09;
+                if (bruto <= 26650000) return 0.10;
+                if (bruto <= 29000000) return 0.11;
+                if (bruto <= 30900000) return 0.12;
+                if (bruto <= 33100000) return 0.13;
+                if (bruto <= 35900000) return 0.14;
+                if (bruto <= 39300000) return 0.15;
+                if (bruto <= 43600000) return 0.16;
+                if (bruto <= 48100000) return 0.17;
+                if (bruto <= 52400000) return 0.18;
+                if (bruto <= 57300000) return 0.19;
+                if (bruto <= 63400000) return 0.20;
+                if (bruto <= 72700000) return 0.21;
+                if (bruto <= 87100000) return 0.22;
+                if (bruto <= 103900000) return 0.23;
+                if (bruto <= 122400000) return 0.24;
+                if (bruto <= 144700000) return 0.25;
+                if (bruto <= 180400000) return 0.26;
+                if (bruto <= 234900000) return 0.27;
+                if (bruto <= 321000000) return 0.28;
+                if (bruto <= 470000000) return 0.29;
+                if (bruto <= 631500000) return 0.30;
+                if (bruto <= 723100000) return 0.31;
+                if (bruto <= 1422000000) return 0.32;
+                if (bruto <= 1422100000) return 0.33;
+                return 0.34;
+            }
+        }
+
+        // RUMUS ITERATIF GROSS-UP TER BULANAN
+        function calculateGrossUpTER(ptkp, brutoTanpaPajak) {
+            const category = getTerCategory(ptkp);
+            let brutoPajakFinal = brutoTanpaPajak;
+            let rateFinal = 0;
+            
+            for (let i = 0; i < 5; i++) {
+                rateFinal = getTerRateFull(category, brutoPajakFinal);
+                if (rateFinal >= 1) break;
+                brutoPajakFinal = brutoTanpaPajak / (1 - rateFinal);
+            }
+
+            const pph21GrossUp = brutoPajakFinal * rateFinal;
+
+            return {
+                category: category,
+                rate: rateFinal,
+                brutoPajakFinal: brutoPajakFinal,
+                pph21GrossUp: pph21GrossUp
+            };
+        }
+
+        // --- 3. AUTHENTICATION LOGIC ---
         function handleLogin(e) {
             e.preventDefault();
             const u = document.getElementById('login-username').value.trim().toUpperCase();
@@ -461,7 +615,7 @@
             location.reload();
         }
 
-        // --- 3. UI NAVIGATION TAB SWITCHER ---
+        // --- 4. UI NAVIGATION TAB SWITCHER ---
         function switchTab(tabId) {
             activeTab = tabId;
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
@@ -474,7 +628,7 @@
             if (tabId === 'audit') renderAuditLogs();
         }
 
-        // --- 4. FORMATTERS & CALCULATION UTILS ---
+        // --- 5. FORMATTERS & UTILS ---
         function formatRibuan(val) {
             return new Intl.NumberFormat('id-ID').format(val || 0);
         }
@@ -496,15 +650,6 @@
             return 'A';
         }
 
-        function getTerRate(category, brutoPajak) {
-            if (brutoPajak <= 5400000) return 0;
-            if (brutoPajak <= 6000000) return 0.0025;
-            if (brutoPajak <= 7000000) return 0.01;
-            if (brutoPajak <= 10000000) return 0.02;
-            if (brutoPajak <= 15000000) return 0.05;
-            return 0.09;
-        }
-
         async function logAudit(action, detail) {
             if (currentUser) {
                 await db.collection('audit_logs').add({
@@ -516,13 +661,11 @@
             }
         }
 
-        // --- 5. FIREBASE DATA HANDLERS ---
+        // --- 6. FIREBASE DATA HANDLERS ---
         async function loadGlobalData() {
-            // Load Karyawan
             const karySnap = await db.collection('karyawan').get();
             globalKaryawan = karySnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-            // Load Data Direktur
             try {
                 const dirDoc = await db.collection('settings').doc('direktur').get();
                 if (dirDoc.exists) {
@@ -560,7 +703,7 @@
                 const tunj = (k.tunjJab || 0) + (k.tunjMakan || 0) + (k.tunjPulsa || 0);
                 
                 const bpjsKesPribadi = dasarKes * 0.01;
-                const bpjsTkPribadi = dasarTk * 0.03; // 2% JHT + 1% JP
+                const bpjsTkPribadi = dasarTk * 0.03;
                 const thp = (gp + tunj) - (bpjsKesPribadi + bpjsTkPribadi);
 
                 tbody.innerHTML += `
@@ -754,27 +897,24 @@
                 const tunj = (k.tunjJab || 0) + (k.tunjMakan || 0) + (k.tunjPulsa || 0);
                 const brutoTHP = gp + tunj;
                 
-                // Premi BPJS Perusahaan (JKK 0.24% + JKM 0.30% dari dasar TK, Kes 4% dari dasar Kes)
                 const bpjsPerusahaan = (dasarTk * 0.0024) + (dasarTk * 0.0030) + (dasarKes * 0.04);
-                const brutoPajak = brutoTHP + bpjsPerusahaan;
+                const brutoAwalTanpaPajak = brutoTHP + bpjsPerusahaan;
                 
-                const category = getTerCategory(k.ptkp);
-                const rate = getTerRate(category, brutoPajak);
-                const pph21 = brutoPajak * rate;
+                const calc = calculateGrossUpTER(k.ptkp, brutoAwalTanpaPajak);
 
                 totalBrutoPajakAcc += brutoTHP;
-                totalPPhAcc += pph21;
+                totalPPhAcc += calc.pph21GrossUp;
 
                 tbody.innerHTML += `
                     <tr class="border-b bg-white">
                         <td class="p-3 font-semibold">${k.nama}</td>
                         <td class="p-3">${k.ptkp}</td>
-                        <td class="p-3 font-bold text-blue-600">TER ${category}</td>
+                        <td class="p-3 font-bold text-blue-600">TER ${calc.category}</td>
                         <td class="p-3">Rp ${formatRibuan(brutoTHP)}</td>
                         <td class="p-3">Rp ${formatRibuan(bpjsPerusahaan)}</td>
-                        <td class="p-3 font-semibold">Rp ${formatRibuan(brutoPajak)}</td>
-                        <td class="p-3">${(rate * 100).toFixed(2)}%</td>
-                        <td class="p-3 font-bold text-emerald-600">Rp ${formatRibuan(pph21)}</td>
+                        <td class="p-3 font-semibold text-slate-900">Rp ${formatRibuan(calc.brutoPajakFinal)}</td>
+                        <td class="p-3 font-bold text-blue-700">${(calc.rate * 100).toFixed(2)}%</td>
+                        <td class="p-3 font-bold text-emerald-600">Rp ${formatRibuan(calc.pph21GrossUp)}</td>
                     </tr>
                 `;
             });
@@ -903,15 +1043,15 @@
         }
 
         function exportToCoretaxCSV() {
-            let csvContent = "data:text/csv;charset=utf-8,NIK,NAMA,NPWP,STATUS_PTKP,BRUTO_PAJAK,PPH21_TER\n";
+            let csvContent = "data:text/csv;charset=utf-8,NIK,NAMA,NPWP,STATUS_PTKP,BRUTO_PAJAK_GROSSUP,PPH21_TER\n";
             globalKaryawan.forEach(k => {
                 const gp = k.gajiPokok || 0;
                 const dasarTk = getDasarBpjsTK(k);
                 const dasarKes = getDasarBpjsKes(k);
                 const bpjsPerusahaan = (dasarTk * 0.0024) + (dasarTk * 0.0030) + (dasarKes * 0.04);
-                const brutoPajak = gp + (k.tunjJab || 0) + bpjsPerusahaan;
-                const pph21 = brutoPajak * getTerRate(getTerCategory(k.ptkp), brutoPajak);
-                csvContent += `${k.nik},${k.nama},${k.npwp || ''},${k.ptkp},${brutoPajak},${pph21}\n`;
+                const brutoAwal = gp + (k.tunjJab || 0) + bpjsPerusahaan;
+                const calc = calculateGrossUpTER(k.ptkp, brutoAwal);
+                csvContent += `${k.nik},${k.nama},${k.npwp || ''},${k.ptkp},${calc.brutoPajakFinal},${calc.pph21GrossUp}\n`;
             });
             const encodedUri = encodeURI(csvContent);
             const link = document.createElement("a");
