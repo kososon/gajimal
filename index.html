@@ -41,11 +41,11 @@
             <form id="login-form" onsubmit="handleLogin(event)" class="space-y-4">
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Username</label>
-                    <input type="text" id="login-username" required class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none uppercase" placeholder="">
+                    <input type="text" id="login-username" required class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none uppercase">
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Password</label>
-                    <input type="password" id="login-password" required class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="">
+                    <input type="password" id="login-password" required class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
                 </div>
                 <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-lg transition shadow-md">Masuk ke Sistem</button>
             </form>
@@ -114,7 +114,7 @@
                         <p id="dash-total-pph" class="text-2xl font-bold text-blue-600 mt-1">Rp 0</p>
                     </div>
                     <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-                        <p class="text-xs font-semibold text-slate-500 uppercase">Dasar BPJS TK / Kes</p>
+                        <p class="text-xs font-semibold text-slate-500 uppercase">Dasar JHT / Kes</p>
                         <p id="dash-total-bpjs" class="text-2xl font-bold text-indigo-600 mt-1">Rp 0</p>
                     </div>
                 </div>
@@ -128,7 +128,7 @@
                                     <th class="p-3">Nama</th>
                                     <th class="p-3">Jabatan</th>
                                     <th class="p-3">Gaji Nett</th>
-                                    <th class="p-3">Dasar BPJS TK</th>
+                                    <th class="p-3">Dasar JHT</th>
                                     <th class="p-3">Dasar BPJS Kes</th>
                                     <th class="p-3">Status PPh 21</th>
                                 </tr>
@@ -182,7 +182,7 @@
                                     <th class="p-2">Gratifikasi</th>
                                     <th class="p-2">THR</th>
                                     <th class="p-2">Pot. Gaji</th>
-                                    <th class="p-2">Config BPJS</th>
+                                    <th class="p-2">Config BPJS TK & Kes</th>
                                     <th class="p-2">Aksi</th>
                                 </tr>
                             </thead>
@@ -245,7 +245,7 @@
                                     <th class="p-3">PTKP</th>
                                     <th class="p-3">Kategori TER</th>
                                     <th class="p-3">Bruto THP</th>
-                                    <th class="p-3">BPJS Perusahaan</th>
+                                    <th class="p-3">BPJS Kena Pajak (JKK, JKM, Kes)</th>
                                     <th class="p-3">Bruto Pajak (Gross-Up)</th>
                                     <th class="p-3">Tarif TER</th>
                                     <th class="p-3">PPh 21 (Gross-Up)</th>
@@ -265,7 +265,6 @@
                     <button onclick="window.print()" class="bg-slate-800 text-white text-xs px-4 py-2 rounded-lg font-medium">Cetak Slip (Half A4)</button>
                 </div>
 
-                <!-- Slip Gaji Template Container -->
                 <div id="slip-print-area" class="bg-white p-6 rounded-xl border border-slate-300 max-w-2xl mx-auto text-xs leading-relaxed">
                     <div class="text-center border-b pb-3 mb-3">
                         <h2 class="font-bold text-base uppercase">PT MULTISARANA ARGO LESTARI</h2>
@@ -306,7 +305,6 @@
                         <span id="slip-thp-total">Rp 0</span>
                     </div>
 
-                    <!-- Tanda Tangan Sub-Footer -->
                     <div class="grid grid-cols-2 text-center mt-8">
                         <div>
                             <p id="slip-ttd-kota-tgl">Pekanbaru, 31 Januari 2026</p>
@@ -324,7 +322,7 @@
                 </div>
             </section>
 
-            <!-- TAB 7: DATA DIREKTUR (Superuser) -->
+            <!-- TAB 7: DATA DIREKTUR -->
             <section id="tab-direktur" class="tab-content hidden">
                 <div class="bg-white p-4 rounded-xl border max-w-md mx-auto shadow-sm">
                     <h3 class="font-bold text-slate-700 mb-4">Pengaturan Master Direktur</h3>
@@ -342,7 +340,7 @@
                 </div>
             </section>
 
-            <!-- TAB 8: AUDIT LOG (Superuser) -->
+            <!-- TAB 8: AUDIT LOG -->
             <section id="tab-audit" class="tab-content hidden">
                 <h3 class="font-bold text-slate-700 mb-4">Audit Log Aktivitas Admin</h3>
                 <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
@@ -363,7 +361,7 @@
         </main>
     </div>
 
-    <!-- Modal Form Karyawan (Tambah / Edit) -->
+    <!-- Modal Form Karyawan -->
     <div id="modal-karyawan" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center z-50">
         <div class="bg-white p-6 rounded-xl shadow-xl w-full max-w-md border">
             <h3 id="modal-karyawan-title" class="font-bold text-slate-800 mb-4 text-base">Tambah Data Karyawan</h3>
@@ -412,7 +410,6 @@
 
     <!-- Engine Application JavaScript -->
     <script>
-        // --- 1. FIREBASE CONFIGURATION ---
         const firebaseConfig = {
             apiKey: "AIzaSyAn0GEPGWMEmDslzabkHR2DAnDFctHRjDw",
             authDomain: "payroll-multisarana.firebaseapp.com",
@@ -426,16 +423,14 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // Plafon Maksimal Dasar BPJS Ketenagakerjaan (Sesuai Ketentuan Terbaru)
-        const MAX_DASAR_BPJS_JP = 10042300; // Limit Plafon JP
+        // Plafon Maksimal BPJS JP Sesuai Regulasi Kemnaker
+        const MAX_DASAR_BPJS_JP = 10042300; 
 
-        // Global Application States
         let currentUser = null;
         let activeTab = 'dashboard';
         let globalKaryawan = [];
         let globalDirektur = { nama: "ABDUL HALEK", kota: "Pekanbaru" };
 
-        // --- 2. TABEL RESMI PMK 168/2023 (FULL TER A, B, C S.D. 34%) ---
         function getTerRateFull(category, bruto) {
             if (category === 'A') {
                 if (bruto <= 5400000) return 0;
@@ -567,7 +562,6 @@
             }
         }
 
-        // RUMUS ITERATIF GROSS-UP TER BULANAN
         function calculateGrossUpTER(ptkp, brutoTanpaPajak) {
             const category = getTerCategory(ptkp);
             let brutoPajakFinal = brutoTanpaPajak;
@@ -589,7 +583,6 @@
             };
         }
 
-        // --- 3. AUTHENTICATION LOGIC ---
         function handleLogin(e) {
             e.preventDefault();
             const u = document.getElementById('login-username').value.trim().toUpperCase();
@@ -619,7 +612,6 @@
             location.reload();
         }
 
-        // --- 4. UI NAVIGATION TAB SWITCHER ---
         function switchTab(tabId) {
             activeTab = tabId;
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
@@ -632,7 +624,6 @@
             if (tabId === 'audit') renderAuditLogs();
         }
 
-        // --- 5. FORMATTERS & UTILS ---
         function formatRibuan(val) {
             return new Intl.NumberFormat('id-ID').format(val || 0);
         }
@@ -665,7 +656,6 @@
             }
         }
 
-        // --- 6. HELPER KOMPONEN BPJS TK & KES ---
         function getBpjsTkComponents(k) {
             const gp = k.gajiPokok || 0;
             if (k.autoBpjsTk !== false) {
@@ -689,7 +679,6 @@
             return (k.autoBpjsKes !== false) ? (k.gajiPokok || 0) : (k.dasarBpjsKes || 0);
         }
 
-        // --- 7. FIREBASE DATA HANDLERS ---
         async function loadGlobalData() {
             const karySnap = await db.collection('karyawan').get();
             globalKaryawan = karySnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -868,23 +857,37 @@
                         <td class="p-2 space-y-1">
                             <div class="flex items-center gap-1 text-[10px]">
                                 <input type="checkbox" id="auto-tk-${k.id}" ${isAutoTk ? 'checked' : ''} onchange="toggleBpjsInputs('${k.id}')">
-                                <label for="auto-tk-${k.id}" class="font-bold">Auto BPJS TK</label>
+                                <label for="auto-tk-${k.id}" class="font-bold text-slate-700">Auto BPJS TK</label>
                             </div>
-                            <div id="container-dasar-tk-${k.id}" style="display: ${isAutoTk ? 'none' : 'block'};" class="space-y-1">
-                                <input type="text" value="${formatRibuan(k.dasarJht || 0)}" onkeyup="formatInputRibuan(this)" class="w-24 border rounded p-0.5 text-[10px]" placeholder="Dasar JHT" id="dasar-jht-${k.id}">
-                                <input type="text" value="${formatRibuan(k.dasarJkk || 0)}" onkeyup="formatInputRibuan(this)" class="w-24 border rounded p-0.5 text-[10px]" placeholder="Dasar JKK" id="dasar-jkk-${k.id}">
-                                <input type="text" value="${formatRibuan(k.dasarJkm || 0)}" onkeyup="formatInputRibuan(this)" class="w-24 border rounded p-0.5 text-[10px]" placeholder="Dasar JKM" id="dasar-jkm-${k.id}">
-                                <input type="text" value="${formatRibuan(k.dasarJp || 0)}" onkeyup="formatInputRibuan(this)" class="w-24 border rounded p-0.5 text-[10px]" placeholder="Dasar JP" id="dasar-jp-${k.id}">
+                            <!-- Form Isian Manual BPJS TK Lengkap Label -->
+                            <div id="container-dasar-tk-${k.id}" style="display: ${isAutoTk ? 'none' : 'block'};" class="space-y-1 bg-slate-50 p-1.5 rounded border">
+                                <div>
+                                    <label class="text-[9px] font-bold text-slate-600 block">Base JHT:</label>
+                                    <input type="text" value="${formatRibuan(k.dasarJht || 0)}" onkeyup="formatInputRibuan(this)" class="w-24 border rounded p-0.5 text-[10px]" placeholder="Upah JHT" id="dasar-jht-${k.id}">
+                                </div>
+                                <div>
+                                    <label class="text-[9px] font-bold text-slate-600 block">Base JKK:</label>
+                                    <input type="text" value="${formatRibuan(k.dasarJkk || 0)}" onkeyup="formatInputRibuan(this)" class="w-24 border rounded p-0.5 text-[10px]" placeholder="Upah JKK" id="dasar-jkk-${k.id}">
+                                </div>
+                                <div>
+                                    <label class="text-[9px] font-bold text-slate-600 block">Base JKM:</label>
+                                    <input type="text" value="${formatRibuan(k.dasarJkm || 0)}" onkeyup="formatInputRibuan(this)" class="w-24 border rounded p-0.5 text-[10px]" placeholder="Upah JKM" id="dasar-jkm-${k.id}">
+                                </div>
+                                <div>
+                                    <label class="text-[9px] font-bold text-slate-600 block">Base JP:</label>
+                                    <input type="text" value="${formatRibuan(k.dasarJp || 0)}" onkeyup="formatInputRibuan(this)" class="w-24 border rounded p-0.5 text-[10px]" placeholder="Upah JP" id="dasar-jp-${k.id}">
+                                </div>
                             </div>
                             <div class="flex items-center gap-1 text-[10px] pt-1 border-t">
                                 <input type="checkbox" id="auto-kes-${k.id}" ${isAutoKes ? 'checked' : ''} onchange="toggleBpjsInputs('${k.id}')">
-                                <label for="auto-kes-${k.id}" class="font-bold">Auto BPJS Kes</label>
+                                <label for="auto-kes-${k.id}" class="font-bold text-slate-700">Auto BPJS Kes</label>
                             </div>
-                            <div id="container-dasar-kes-${k.id}" style="display: ${isAutoKes ? 'none' : 'block'};">
-                                <input type="text" value="${formatRibuan(k.dasarBpjsKes || 0)}" onkeyup="formatInputRibuan(this)" class="w-24 border rounded p-0.5 text-[10px]" placeholder="Dasar BPJS Kes" id="dasar-kes-${k.id}">
+                            <div id="container-dasar-kes-${k.id}" style="display: ${isAutoKes ? 'none' : 'block'};" class="bg-slate-50 p-1 rounded border mt-0.5">
+                                <label class="text-[9px] font-bold text-slate-600 block">Base BPJS Kes:</label>
+                                <input type="text" value="${formatRibuan(k.dasarBpjsKes || 0)}" onkeyup="formatInputRibuan(this)" class="w-24 border rounded p-0.5 text-[10px]" placeholder="Upah BPJS Kes" id="dasar-kes-${k.id}">
                             </div>
                         </td>
-                        <td class="p-2"><button onclick="saveGaji('${k.id}')" class="bg-blue-600 text-white px-2 py-1 rounded text-xs">Simpan</button></td>
+                        <td class="p-2"><button onclick="saveGaji('${k.id}')" class="bg-blue-600 text-white px-2 py-1 rounded text-xs font-semibold hover:bg-blue-700">Simpan</button></td>
                     </tr>
                 `;
             });
@@ -929,9 +932,10 @@
                 const tunj = (k.tunjJab || 0) + (k.tunjMakan || 0) + (k.tunjPulsa || 0) + (k.tunjLain || 0);
                 const brutoTHP = gp + tunj;
                 
-                // BPJS Perusahaan (JKK 0.24% + JKM 0.30% + Kes 4%)
-                const bpjsPerusahaan = (tk.jkk * 0.0024) + (tk.jkm * 0.0030) + (dasarKes * 0.04);
-                const brutoAwalTanpaPajak = brutoTHP + bpjsPerusahaan;
+                // HANYA JKK (0.24%), JKM (0.30%), DAN BPJS KES (4%) PERUSAHAAN YANG MASUK BRUTO PAJAK
+                // JHT & JP DIBAYAR PERUSAHAAN EKSKLUSIF TIDAK MASUK DALAM KALKULASI BRUTO PAJAK
+                const bpjsKenaPajakPerusahaan = (tk.jkk * 0.0024) + (tk.jkm * 0.0030) + (dasarKes * 0.04);
+                const brutoAwalTanpaPajak = brutoTHP + bpjsKenaPajakPerusahaan;
                 
                 const calc = calculateGrossUpTER(k.ptkp, brutoAwalTanpaPajak);
 
@@ -944,7 +948,7 @@
                         <td class="p-3">${k.ptkp}</td>
                         <td class="p-3 font-bold text-blue-600">TER ${calc.category}</td>
                         <td class="p-3">Rp ${formatRibuan(brutoTHP)}</td>
-                        <td class="p-3">Rp ${formatRibuan(bpjsPerusahaan)}</td>
+                        <td class="p-3">Rp ${formatRibuan(bpjsKenaPajakPerusahaan)}</td>
                         <td class="p-3 font-semibold text-slate-900">Rp ${formatRibuan(calc.brutoPajakFinal)}</td>
                         <td class="p-3 font-bold text-blue-700">${(calc.rate * 100).toFixed(2)}%</td>
                         <td class="p-3 font-bold text-emerald-600">Rp ${formatRibuan(calc.pph21GrossUp)}</td>
