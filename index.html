@@ -12,9 +12,12 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
 
     <style>
-        /* Format Cetak Kertas A4 Setengah (A5 Landscape/A4 Cut Half) */
+        /* Format Cetak Slip Half-A4 & Print PDF Rekapitulasi Gaji */
         @media print {
             body * { visibility: hidden; }
+            .no-print { display: none !important; }
+
+            /* Cetak Slip Gaji Single Karyawan */
             #slip-print-area, #slip-print-area * { visibility: visible; }
             #slip-print-area {
                 position: absolute;
@@ -25,7 +28,25 @@
                 padding: 10mm;
                 box-sizing: border-box;
             }
-            .no-print { display: none !important; }
+
+            /* Cetak Rekapitulasi Payroll (Print to PDF Format Terlampir) */
+            body.printing-rekap #slip-print-area { display: none !important; }
+            body.printing-rekap #rekap-pdf-area, body.printing-rekap #rekap-pdf-area * { 
+                visibility: visible !important; 
+            }
+            body.printing-rekap #rekap-pdf-area {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                padding: 5mm;
+                box-sizing: border-box;
+            }
+        }
+        
+        @page {
+            size: auto;
+            margin: 5mm;
         }
     </style>
 </head>
@@ -85,9 +106,9 @@
         <!-- Body Content -->
         <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6">
             
-            <!-- Global Filter -->
+            <!-- Global Filter & Print Action Bar -->
             <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 mb-6 flex flex-wrap justify-between items-center gap-4 no-print">
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-3">
                     <label class="text-xs font-bold text-slate-500 uppercase">Periode Data:</label>
                     <select id="filter-periode-type" onchange="loadGlobalData()" class="border rounded px-3 py-1.5 text-sm bg-slate-50">
                         <option value="monthly">Bulanan</option>
@@ -95,27 +116,38 @@
                     </select>
                     <input type="month" id="filter-month" value="2026-01" onchange="loadGlobalData()" class="border rounded px-3 py-1.5 text-sm bg-slate-50">
                 </div>
-                <div class="text-xs text-slate-500">Status Kepegawaian: <span class="font-bold text-slate-700">Tetap (PKWTT)</span></div>
+                
+                <div class="flex items-center gap-2">
+                    <button onclick="printRekapPDF()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs px-4 py-2 rounded-lg font-bold shadow transition flex items-center gap-1.5">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                        Print Rekap Penggajian (PDF)
+                    </button>
+                </div>
             </div>
 
             <!-- TAB 1: DASHBOARD -->
             <section id="tab-dashboard" class="tab-content">
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <!-- 5 Card Ringkasan Finansial -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
                     <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
                         <p class="text-xs font-semibold text-slate-500 uppercase">Total Karyawan</p>
                         <p id="dash-total-karyawan" class="text-2xl font-bold text-slate-800 mt-1">0</p>
                     </div>
                     <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
                         <p class="text-xs font-semibold text-slate-500 uppercase">Total Bruto THP</p>
-                        <p id="dash-total-bruto" class="text-2xl font-bold text-emerald-600 mt-1">Rp 0</p>
+                        <p id="dash-total-bruto" class="text-xl font-bold text-emerald-600 mt-1">Rp 0</p>
                     </div>
                     <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
                         <p class="text-xs font-semibold text-slate-500 uppercase">Total PPh 21 Ditanggung</p>
-                        <p id="dash-total-pph" class="text-2xl font-bold text-blue-600 mt-1">Rp 0</p>
+                        <p id="dash-total-pph" class="text-xl font-bold text-blue-600 mt-1">Rp 0</p>
                     </div>
                     <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-                        <p class="text-xs font-semibold text-slate-500 uppercase">Dasar JHT / Kes</p>
-                        <p id="dash-total-bpjs" class="text-2xl font-bold text-indigo-600 mt-1">Rp 0</p>
+                        <p class="text-xs font-semibold text-slate-500 uppercase">Total BPJS TK (Pers + Kary)</p>
+                        <p id="dash-total-bpjs-tk" class="text-xl font-bold text-indigo-600 mt-1">Rp 0</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                        <p class="text-xs font-semibold text-slate-500 uppercase">Total BPJS Kes (Pers + Kary)</p>
+                        <p id="dash-total-bpjs-kes" class="text-xl font-bold text-teal-600 mt-1">Rp 0</p>
                     </div>
                 </div>
 
@@ -361,6 +393,45 @@
         </main>
     </div>
 
+    <!-- AREA CETAK REKAPITULASI PENGGAJIAN (PRINT TO PDF FORMAT) -->
+    <div id="rekap-pdf-area" class="hidden">
+        <div class="text-center mb-3">
+            <h1 class="text-base font-bold uppercase tracking-wide">PT MULTISARANA ARGO LESTARI</h1>
+            <h2 class="text-xs font-semibold">REKAPITULASI PAYROLL & IURAN BPJS - PERIODE JANUARI 2026</h2>
+        </div>
+        <table class="w-full text-[9px] border-collapse border border-black text-center">
+            <thead>
+                <tr class="bg-slate-200 border-b border-black">
+                    <th rowspan="2" class="border border-black p-1">Nama</th>
+                    <th rowspan="2" class="border border-black p-1">TOTAL GAJI</th>
+                    <th rowspan="2" class="border border-black p-1">Gaji Lapor BPJS TK</th>
+                    <th rowspan="2" class="border border-black p-1">Gaji Lapor BPJS Kes</th>
+                    <th rowspan="2" class="border border-black p-1">Gapok</th>
+                    <th colspan="4" class="border border-black p-1">ALLOWANCE / TUNJANGAN</th>
+                    <th rowspan="2" class="border border-black p-1">TOTAL ALLOWANCE</th>
+                    <th colspan="5" class="border border-black p-1">IURAN BPJS PERUSAHAAN</th>
+                    <th colspan="3" class="border border-black p-1">IURAN BPJS KARYAWAN</th>
+                </tr>
+                <tr class="bg-slate-100 border-b border-black">
+                    <th class="border border-black p-0.5">Tunj Jabatan</th>
+                    <th class="border border-black p-0.5">Tunj PBT</th>
+                    <th class="border border-black p-0.5">Tunj Makan</th>
+                    <th class="border border-black p-0.5">Tunj Lain2</th>
+                    <th class="border border-black p-0.5">JKK (0.54%)</th>
+                    <th class="border border-black p-0.5">JHT (3.70%)</th>
+                    <th class="border border-black p-0.5">JP (2%)</th>
+                    <th class="border border-black p-0.5">JKM (0.30%)</th>
+                    <th class="border border-black p-0.5">BPJS Kes (4%)</th>
+                    <th class="border border-black p-0.5">JHT (2%)</th>
+                    <th class="border border-black p-0.5">JP (1%)</th>
+                    <th class="border border-black p-0.5">BPJS Kes (1%)</th>
+                </tr>
+            </thead>
+            <tbody id="rekap-pdf-body"></tbody>
+            <tfoot id="rekap-pdf-foot" class="font-bold bg-slate-100"></tfoot>
+        </table>
+    </div>
+
     <!-- Modal Form Karyawan -->
     <div id="modal-karyawan" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center z-50">
         <div class="bg-white p-6 rounded-xl shadow-xl w-full max-w-md border">
@@ -423,9 +494,9 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // Plafon Maksimal Dasar BPJS Sesuai Peraturan Pemerintah
+        // Limit Atas BPJS Sesuai Peraturan Pemerintah
         const MAX_DASAR_BPJS_JP = 10042300; 
-        const MAX_DASAR_BPJS_KES = 12000000; // Cap Maksimal BPJS Kes Rp 12 Juta
+        const MAX_DASAR_BPJS_KES = 12000000;
 
         let currentUser = null;
         let activeTab = 'dashboard';
@@ -678,7 +749,7 @@
 
         function getDasarBpjsKes(k) {
             const raw = (k.autoBpjsKes !== false) ? (k.gajiPokok || 0) : (k.dasarBpjsKes || 0);
-            return Math.min(raw, MAX_DASAR_BPJS_KES); // Di-cap maks 12 juta
+            return Math.min(raw, MAX_DASAR_BPJS_KES);
         }
 
         async function loadGlobalData() {
@@ -707,6 +778,11 @@
         function renderDashboard() {
             const tbody = document.getElementById('table-dashboard-body');
             tbody.innerHTML = '';
+
+            let totalBrutoTHP = 0;
+            let totalSetorBpjsTK = 0;
+            let totalSetorBpjsKes = 0;
+
             globalKaryawan.forEach(k => {
                 const gp = k.gajiPokok || 0;
                 const tk = getBpjsTkComponents(k);
@@ -715,7 +791,18 @@
                 
                 const bpjsKesPribadi = dasarKes * 0.01;
                 const bpjsTkPribadi = (tk.jht * 0.02) + (tk.jp * 0.01);
+                
+                const bpjsTkPerusahaan = (tk.jht * 0.037) + (tk.jkk * 0.0054) + (tk.jkm * 0.0030) + (tk.jp * 0.02);
+                const bpjsKesPerusahaan = dasarKes * 0.04;
+
+                const totalKewajibanTk = bpjsTkPerusahaan + bpjsTkPribadi;
+                const totalKewajibanKes = bpjsKesPerusahaan + bpjsKesPribadi;
+
                 const thp = (gp + tunj) - (bpjsKesPribadi + bpjsTkPribadi);
+
+                totalBrutoTHP += (gp + tunj);
+                totalSetorBpjsTK += totalKewajibanTk;
+                totalSetorBpjsKes += totalKewajibanKes;
 
                 tbody.innerHTML += `
                     <tr class="border-b bg-white hover:bg-slate-50">
@@ -728,7 +815,10 @@
                     </tr>
                 `;
             });
+
             document.getElementById('dash-total-karyawan').innerText = globalKaryawan.length;
+            document.getElementById('dash-total-bpjs-tk').innerText = `Rp ${formatRibuan(totalSetorBpjsTK)}`;
+            document.getElementById('dash-total-bpjs-kes').innerText = `Rp ${formatRibuan(totalSetorBpjsKes)}`;
         }
 
         function openModalKaryawan(editId = null) {
@@ -933,7 +1023,6 @@
                 const tunj = (k.tunjJab || 0) + (k.tunjMakan || 0) + (k.tunjPulsa || 0) + (k.tunjLain || 0);
                 const brutoTHP = gp + tunj;
                 
-                // KALKULASI PERSIS SESUAI ATURAN TERBARU: JKK (0.54%) + JKM (0.30%) + BPJS KES (4% CAP MAX 12M)
                 const bpjsKenaPajakPerusahaan = (tk.jkk * 0.0054) + (tk.jkm * 0.0030) + (dasarKes * 0.04);
                 const brutoAwalTanpaPajak = brutoTHP + bpjsKenaPajakPerusahaan;
                 
@@ -958,6 +1047,114 @@
 
             document.getElementById('dash-total-bruto').innerText = `Rp ${formatRibuan(totalBrutoPajakAcc)}`;
             document.getElementById('dash-total-pph').innerText = `Rp ${formatRibuan(totalPPhAcc)}`;
+        }
+
+        // --- FUNGSIONALITAS GENERATE TABEL PRINT REKAP GAJI PDF ---
+        function printRekapPDF() {
+            const tbody = document.getElementById('rekap-pdf-body');
+            const tfoot = document.getElementById('rekap-pdf-foot');
+            tbody.innerHTML = '';
+
+            let sumTotalGaji = 0, sumLaporTk = 0, sumLaporKes = 0, sumGapok = 0;
+            let sumTunjJab = 0, sumTunjPbt = 0, sumTunjMakan = 0, sumTunjLain = 0, sumTotalAllow = 0;
+            let sumJkkPers = 0, sumJhtPers = 0, sumJpPers = 0, sumJkmPers = 0, sumKesPers = 0;
+            let sumJhtKary = 0, sumJpKary = 0, sumKesKary = 0;
+
+            globalKaryawan.forEach(k => {
+                const gp = k.gajiPokok || 0;
+                const tk = getBpjsTkComponents(k);
+                const dasarKes = getDasarBpjsKes(k);
+                const tj = k.tunjJab || 0;
+                const tpbt = k.tunjPulsa || 0;
+                const tm = k.tunjMakan || 0;
+                const tl = k.tunjLain || 0;
+
+                const totalAllow = tj + tpbt + tm + tl;
+                const totalGaji = gp + totalAllow;
+
+                // Hitung Iuran Perusahaan
+                const jkkP = tk.jkk * 0.0054;
+                const jhtP = tk.jht * 0.037;
+                const jpP = tk.jp * 0.02;
+                const jkmP = tk.jkm * 0.0030;
+                const kesP = dasarKes * 0.04;
+
+                // Hitung Iuran Karyawan
+                const jhtK = tk.jht * 0.02;
+                const jpK = tk.jp * 0.01;
+                const kesK = dasarKes * 0.01;
+
+                // Akumulasi Total
+                sumTotalGaji += totalGaji;
+                sumLaporTk += tk.jht;
+                sumLaporKes += dasarKes;
+                sumGapok += gp;
+                sumTunjJab += tj;
+                sumTunjPbt += tpbt;
+                sumTunjMakan += tm;
+                sumTunjLain += tl;
+                sumTotalAllow += totalAllow;
+
+                sumJkkPers += jkkP;
+                sumJhtPers += jhtP;
+                sumJpPers += jpP;
+                sumJkmPers += jkmP;
+                sumKesPers += kesP;
+
+                sumJhtKary += jhtK;
+                sumJpKary += jpK;
+                sumKesKary += kesK;
+
+                tbody.innerHTML += `
+                    <tr class="border-b border-black">
+                        <td class="border border-black p-1 font-semibold text-left">${k.nama}</td>
+                        <td class="border border-black p-1">Rp ${formatRibuan(totalGaji)}</td>
+                        <td class="border border-black p-1">Rp ${formatRibuan(tk.jht)}</td>
+                        <td class="border border-black p-1">Rp ${formatRibuan(dasarKes)}</td>
+                        <td class="border border-black p-1">Rp ${formatRibuan(gp)}</td>
+                        <td class="border border-black p-0.5">Rp ${formatRibuan(tj)}</td>
+                        <td class="border border-black p-0.5">Rp ${formatRibuan(tpbt)}</td>
+                        <td class="border border-black p-0.5">Rp ${formatRibuan(tm)}</td>
+                        <td class="border border-black p-0.5">Rp ${formatRibuan(tl)}</td>
+                        <td class="border border-black p-1 font-semibold">Rp ${formatRibuan(totalAllow)}</td>
+                        <td class="border border-black p-0.5">Rp ${formatRibuan(jkkP)}</td>
+                        <td class="border border-black p-0.5">Rp ${formatRibuan(jhtP)}</td>
+                        <td class="border border-black p-0.5">Rp ${formatRibuan(jpP)}</td>
+                        <td class="border border-black p-0.5">Rp ${formatRibuan(jkmP)}</td>
+                        <td class="border border-black p-0.5">Rp ${formatRibuan(kesP)}</td>
+                        <td class="border border-black p-0.5">Rp ${formatRibuan(jhtK)}</td>
+                        <td class="border border-black p-0.5">Rp ${formatRibuan(jpK)}</td>
+                        <td class="border border-black p-0.5">Rp ${formatRibuan(kesK)}</td>
+                    </tr>
+                `;
+            });
+
+            tfoot.innerHTML = `
+                <tr class="border-t-2 border-black">
+                    <td class="border border-black p-1 text-center font-bold">TOTAL</td>
+                    <td class="border border-black p-1">Rp ${formatRibuan(sumTotalGaji)}</td>
+                    <td class="border border-black p-1">Rp ${formatRibuan(sumLaporTk)}</td>
+                    <td class="border border-black p-1">Rp ${formatRibuan(sumLaporKes)}</td>
+                    <td class="border border-black p-1">Rp ${formatRibuan(sumGapok)}</td>
+                    <td class="border border-black p-0.5">Rp ${formatRibuan(sumTunjJab)}</td>
+                    <td class="border border-black p-0.5">Rp ${formatRibuan(sumTunjPbt)}</td>
+                    <td class="border border-black p-0.5">Rp ${formatRibuan(sumTunjMakan)}</td>
+                    <td class="border border-black p-0.5">Rp ${formatRibuan(sumTunjLain)}</td>
+                    <td class="border border-black p-1">Rp ${formatRibuan(sumTotalAllow)}</td>
+                    <td class="border border-black p-0.5">Rp ${formatRibuan(sumJkkPers)}</td>
+                    <td class="border border-black p-0.5">Rp ${formatRibuan(sumJhtPers)}</td>
+                    <td class="border border-black p-0.5">Rp ${formatRibuan(sumJpPers)}</td>
+                    <td class="border border-black p-0.5">Rp ${formatRibuan(sumJkmPers)}</td>
+                    <td class="border border-black p-0.5">Rp ${formatRibuan(sumKesPers)}</td>
+                    <td class="border border-black p-0.5">Rp ${formatRibuan(sumJhtKary)}</td>
+                    <td class="border border-black p-0.5">Rp ${formatRibuan(sumJpKary)}</td>
+                    <td class="border border-black p-0.5">Rp ${formatRibuan(sumKesKary)}</td>
+                </tr>
+            `;
+
+            document.body.classList.add('printing-rekap');
+            window.print();
+            document.body.classList.remove('printing-rekap');
         }
 
         async function savePinjaman(e) {
