@@ -12,19 +12,12 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
 
     <style>
-        /* Format Cetak Slip Half-A4 & Print PDF Rekapitulasi Gaji */
+        /* Format Cetak Slip Single Karyawan (Half A4) */
         @media print {
-            body * { 
-                visibility: hidden !important; 
-                display: none !important; 
-            }
+            body * { visibility: hidden; }
+            .no-print { display: none !important; }
 
-            /* Cetak Slip Gaji Single Karyawan */
-            body:not(.printing-rekap) #slip-print-area, 
-            body:not(.printing-rekap) #slip-print-area * { 
-                visibility: visible !important; 
-                display: block !important; 
-            }
+            #slip-print-area, #slip-print-area * { visibility: visible; }
             #slip-print-area {
                 position: absolute;
                 left: 0;
@@ -34,38 +27,6 @@
                 padding: 10mm;
                 box-sizing: border-box;
             }
-
-            /* Cetak Rekapitulasi Payroll Landscape */
-            body.printing-rekap #rekap-pdf-area, 
-            body.printing-rekap #rekap-pdf-area * { 
-                visibility: visible !important; 
-            }
-            body.printing-rekap #rekap-pdf-area {
-                display: block !important;
-                position: absolute !important;
-                left: 0 !important;
-                top: 0 !important;
-                width: 100% !important;
-                padding: 5mm !important;
-                box-sizing: border-box !important;
-            }
-
-            body.printing-rekap #rekap-pdf-area table {
-                display: table !important;
-                width: 100% !important;
-            }
-            body.printing-rekap #rekap-pdf-area tr {
-                display: table-row !important;
-            }
-            body.printing-rekap #rekap-pdf-area th,
-            body.printing-rekap #rekap-pdf-area td {
-                display: table-cell !important;
-            }
-        }
-        
-        @page {
-            size: A4 landscape;
-            margin: 5mm;
         }
     </style>
 </head>
@@ -388,7 +349,7 @@
                 </div>
             </section>
 
-            <!-- TAB 8: AUDIT LOG (DENGAN FITUR HAPUS KHUSUS SUPERUSER) -->
+            <!-- TAB 8: AUDIT LOG (KHUSUS SUPERUSER BISA HAPUS LOG) -->
             <section id="tab-audit" class="tab-content hidden">
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="font-bold text-slate-700">Audit Log Aktivitas Admin</h3>
@@ -412,45 +373,6 @@
             </section>
 
         </main>
-    </div>
-
-    <!-- AREA CETAK REKAPITULASI PENGGAJIAN (PDF FORMAT) -->
-    <div id="rekap-pdf-area" class="hidden">
-        <div class="text-center mb-3">
-            <h1 class="text-sm font-bold uppercase tracking-wide">PT MULTISARANA ARGO LESTARI</h1>
-            <h2 class="text-xs font-semibold">REKAPITULASI PAYROLL & IURAN BPJS - PERIODE <span id="rekap-periode-title">JANUARI 2026</span></h2>
-        </div>
-        <table class="w-full text-[8px] border-collapse border border-black text-center">
-            <thead>
-                <tr class="bg-slate-200 border-b border-black font-bold">
-                    <th rowspan="2" class="border border-black p-1">Nama</th>
-                    <th rowspan="2" class="border border-black p-1">TOTAL GAJI</th>
-                    <th rowspan="2" class="border border-black p-1">Gaji Lapor BPJS TK</th>
-                    <th rowspan="2" class="border border-black p-1">Gaji Lapor BPJS Kes</th>
-                    <th rowspan="2" class="border border-black p-1">Gapok</th>
-                    <th colspan="4" class="border border-black p-1">ALLOWANCE / TUNJANGAN</th>
-                    <th rowspan="2" class="border border-black p-1">TOTAL ALLOWANCE</th>
-                    <th colspan="5" class="border border-black p-1">IURAN BPJS PERUSAHAAN</th>
-                    <th colspan="3" class="border border-black p-1">IURAN BPJS KARYAWAN</th>
-                </tr>
-                <tr class="bg-slate-100 border-b border-black font-bold">
-                    <th class="border border-black p-0.5">Tunj Jabatan</th>
-                    <th class="border border-black p-0.5">Tunj PBT</th>
-                    <th class="border border-black p-0.5">Tunj Makan</th>
-                    <th class="border border-black p-0.5">Tunj Lain2</th>
-                    <th class="border border-black p-0.5">JKK (0.54%)</th>
-                    <th class="border border-black p-0.5">JHT (3.70%)</th>
-                    <th class="border border-black p-0.5">JP (2%)</th>
-                    <th class="border border-black p-0.5">JKM (0.30%)</th>
-                    <th class="border border-black p-0.5">BPJS Kes (4%)</th>
-                    <th class="border border-black p-0.5">JHT (2%)</th>
-                    <th class="border border-black p-0.5">JP (1%)</th>
-                    <th class="border border-black p-0.5">BPJS Kes (1%)</th>
-                </tr>
-            </thead>
-            <tbody id="rekap-pdf-body"></tbody>
-            <tfoot id="rekap-pdf-foot" class="font-bold bg-slate-100"></tfoot>
-        </table>
     </div>
 
     <!-- Modal Form Karyawan -->
@@ -786,7 +708,6 @@
             return Math.min(raw, MAX_DASAR_BPJS_KES);
         }
 
-        // LOAD DATA TERPISAH SESUAI PERIODE BULAN
         async function loadGlobalData() {
             const periode = getSelectedPeriode();
             const karySnap = await db.collection('karyawan').get();
@@ -961,7 +882,6 @@
             document.getElementById(`container-dasar-kes-${id}`).style.display = autoKes ? 'none' : 'block';
         }
 
-        // TAMPILAN DATA GAJI BARIS KE-2 (ROW BPJS RAPI & HORIZONTAL)
         function renderGajiTable() {
             const tbody = document.getElementById('table-gaji-body');
             tbody.innerHTML = '';
@@ -1094,20 +1014,16 @@
             document.getElementById('dash-total-pph').innerText = `Rp ${formatRibuan(totalPPhAcc)}`;
         }
 
-        // PRINT REKAP GAJI PDF TERBUKTI AMAN (NO BLANK)
+        // --- KONSEP 1: PRINT REKAP PDF VIA WINDOW KHUSUS (DIJAMIN TIDAK BLANK) ---
         function printRekapPDF() {
-            const periode = getSelectedPeriode();
-            document.getElementById('rekap-periode-title').innerText = periode.toUpperCase();
-
-            const tbody = document.getElementById('rekap-pdf-body');
-            const tfoot = document.getElementById('rekap-pdf-foot');
-            tbody.innerHTML = '';
-
+            const periode = getSelectedPeriode().toUpperCase();
+            
             let sumTotalGaji = 0, sumLaporTk = 0, sumLaporKes = 0, sumGapok = 0;
             let sumTunjJab = 0, sumTunjPbt = 0, sumTunjMakan = 0, sumTunjLain = 0, sumTotalAllow = 0;
             let sumJkkPers = 0, sumJhtPers = 0, sumJpPers = 0, sumJkmPers = 0, sumKesPers = 0;
             let sumJhtKary = 0, sumJpKary = 0, sumKesKary = 0;
 
+            let rowsHTML = '';
             globalKaryawan.forEach(k => {
                 const p = getPayrollData(k.id);
                 const gp = p.gajiPokok || 0;
@@ -1151,61 +1067,125 @@
                 sumJpKary += jpK;
                 sumKesKary += kesK;
 
-                tbody.innerHTML += `
-                    <tr class="border-b border-black">
-                        <td class="border border-black p-1 font-semibold text-left">${k.nama}</td>
-                        <td class="border border-black p-1">Rp ${formatRibuan(totalGaji)}</td>
-                        <td class="border border-black p-1">Rp ${formatRibuan(tk.jht)}</td>
-                        <td class="border border-black p-1">Rp ${formatRibuan(dasarKes)}</td>
-                        <td class="border border-black p-1">Rp ${formatRibuan(gp)}</td>
-                        <td class="border border-black p-0.5">Rp ${formatRibuan(tj)}</td>
-                        <td class="border border-black p-0.5">Rp ${formatRibuan(tpbt)}</td>
-                        <td class="border border-black p-0.5">Rp ${formatRibuan(tm)}</td>
-                        <td class="border border-black p-0.5">Rp ${formatRibuan(tl)}</td>
-                        <td class="border border-black p-1 font-semibold">Rp ${formatRibuan(totalAllow)}</td>
-                        <td class="border border-black p-0.5">Rp ${formatRibuan(jkkP)}</td>
-                        <td class="border border-black p-0.5">Rp ${formatRibuan(jhtP)}</td>
-                        <td class="border border-black p-0.5">Rp ${formatRibuan(jpP)}</td>
-                        <td class="border border-black p-0.5">Rp ${formatRibuan(jkmP)}</td>
-                        <td class="border border-black p-0.5">Rp ${formatRibuan(kesP)}</td>
-                        <td class="border border-black p-0.5">Rp ${formatRibuan(jhtK)}</td>
-                        <td class="border border-black p-0.5">Rp ${formatRibuan(jpK)}</td>
-                        <td class="border border-black p-0.5">Rp ${formatRibuan(kesK)}</td>
+                rowsHTML += `
+                    <tr>
+                        <td class="left font-bold">${k.nama}</td>
+                        <td>Rp ${formatRibuan(totalGaji)}</td>
+                        <td>Rp ${formatRibuan(tk.jht)}</td>
+                        <td>Rp ${formatRibuan(dasarKes)}</td>
+                        <td>Rp ${formatRibuan(gp)}</td>
+                        <td>Rp ${formatRibuan(tj)}</td>
+                        <td>Rp ${formatRibuan(tpbt)}</td>
+                        <td>Rp ${formatRibuan(tm)}</td>
+                        <td>Rp ${formatRibuan(tl)}</td>
+                        <td class="font-bold">Rp ${formatRibuan(totalAllow)}</td>
+                        <td>Rp ${formatRibuan(jkkP)}</td>
+                        <td>Rp ${formatRibuan(jhtP)}</td>
+                        <td>Rp ${formatRibuan(jpP)}</td>
+                        <td>Rp ${formatRibuan(jkmP)}</td>
+                        <td>Rp ${formatRibuan(kesP)}</td>
+                        <td>Rp ${formatRibuan(jhtK)}</td>
+                        <td>Rp ${formatRibuan(jpK)}</td>
+                        <td>Rp ${formatRibuan(kesK)}</td>
                     </tr>
                 `;
             });
 
-            tfoot.innerHTML = `
-                <tr class="border-t-2 border-black">
-                    <td class="border border-black p-1 text-center font-bold">TOTAL</td>
-                    <td class="border border-black p-1">Rp ${formatRibuan(sumTotalGaji)}</td>
-                    <td class="border border-black p-1">Rp ${formatRibuan(sumLaporTk)}</td>
-                    <td class="border border-black p-1">Rp ${formatRibuan(sumLaporKes)}</td>
-                    <td class="border border-black p-1">Rp ${formatRibuan(sumGapok)}</td>
-                    <td class="border border-black p-0.5">Rp ${formatRibuan(sumTunjJab)}</td>
-                    <td class="border border-black p-0.5">Rp ${formatRibuan(sumTunjPbt)}</td>
-                    <td class="border border-black p-0.5">Rp ${formatRibuan(sumTunjMakan)}</td>
-                    <td class="border border-black p-0.5">Rp ${formatRibuan(sumTunjLain)}</td>
-                    <td class="border border-black p-1">Rp ${formatRibuan(sumTotalAllow)}</td>
-                    <td class="border border-black p-0.5">Rp ${formatRibuan(sumJkkPers)}</td>
-                    <td class="border border-black p-0.5">Rp ${formatRibuan(sumJhtPers)}</td>
-                    <td class="border border-black p-0.5">Rp ${formatRibuan(sumJpPers)}</td>
-                    <td class="border border-black p-0.5">Rp ${formatRibuan(sumJkmPers)}</td>
-                    <td class="border border-black p-0.5">Rp ${formatRibuan(sumKesPers)}</td>
-                    <td class="border border-black p-0.5">Rp ${formatRibuan(sumJhtKary)}</td>
-                    <td class="border border-black p-0.5">Rp ${formatRibuan(sumJpKary)}</td>
-                    <td class="border border-black p-0.5">Rp ${formatRibuan(sumKesKary)}</td>
-                </tr>
+            const printHTML = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Rekapitulasi Payroll - ${periode}</title>
+                    <style>
+                        @page { size: A4 landscape; margin: 5mm; }
+                        body { font-family: Arial, sans-serif; margin: 10px; color: #000; }
+                        .header { text-align: center; margin-bottom: 15px; }
+                        .header h1 { margin: 0; font-size: 16px; text-transform: uppercase; }
+                        .header h2 { margin: 3px 0 0 0; font-size: 12px; font-weight: normal; }
+                        table { width: 100%; border-collapse: collapse; font-size: 8px; }
+                        th, td { border: 1px solid #000; padding: 4px 2px; text-align: center; }
+                        th { background-color: #e2e8f0; font-weight: bold; }
+                        .bg-sub { background-color: #f1f5f9; }
+                        .left { text-align: left; }
+                        .font-bold { font-weight: bold; }
+                        tfoot tr { background-color: #e2e8f0; font-weight: bold; }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h1>PT MULTISARANA ARGO LESTARI</h1>
+                        <h2>REKAPITULASI PAYROLL & IURAN BPJS - PERIODE ${periode}</h2>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th rowspan="2">Nama</th>
+                                <th rowspan="2">TOTAL GAJI</th>
+                                <th rowspan="2">Gaji Lapor BPJS TK</th>
+                                <th rowspan="2">Gaji Lapor BPJS Kes</th>
+                                <th rowspan="2">Gapok</th>
+                                <th colspan="4">ALLOWANCE / TUNJANGAN</th>
+                                <th rowspan="2">TOTAL ALLOWANCE</th>
+                                <th colspan="5">IURAN BPJS PERUSAHAAN</th>
+                                <th colspan="3">IURAN BPJS KARYAWAN</th>
+                            </tr>
+                            <tr class="bg-sub">
+                                <th>Tunj Jabatan</th>
+                                <th>Tunj PBT</th>
+                                <th>Tunj Makan</th>
+                                <th>Tunj Lain2</th>
+                                <th>JKK (0.54%)</th>
+                                <th>JHT (3.70%)</th>
+                                <th>JP (2%)</th>
+                                <th>JKM (0.30%)</th>
+                                <th>BPJS Kes (4%)</th>
+                                <th>JHT (2%)</th>
+                                <th>JP (1%)</th>
+                                <th>BPJS Kes (1%)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${rowsHTML}
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td>TOTAL</td>
+                                <td>Rp ${formatRibuan(sumTotalGaji)}</td>
+                                <td>Rp ${formatRibuan(sumLaporTk)}</td>
+                                <td>Rp ${formatRibuan(sumLaporKes)}</td>
+                                <td>Rp ${formatRibuan(sumGapok)}</td>
+                                <td>Rp ${formatRibuan(sumTunjJab)}</td>
+                                <td>Rp ${formatRibuan(sumTunjPbt)}</td>
+                                <td>Rp ${formatRibuan(sumTunjMakan)}</td>
+                                <td>Rp ${formatRibuan(sumTunjLain)}</td>
+                                <td>Rp ${formatRibuan(sumTotalAllow)}</td>
+                                <td>Rp ${formatRibuan(sumJkkPers)}</td>
+                                <td>Rp ${formatRibuan(sumJhtPers)}</td>
+                                <td>Rp ${formatRibuan(sumJpPers)}</td>
+                                <td>Rp ${formatRibuan(sumJkmPers)}</td>
+                                <td>Rp ${formatRibuan(sumKesPers)}</td>
+                                <td>Rp ${formatRibuan(sumJhtKary)}</td>
+                                <td>Rp ${formatRibuan(sumJpKary)}</td>
+                                <td>Rp ${formatRibuan(sumKesKary)}</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </body>
+                </html>
             `;
 
-            document.body.classList.add('printing-rekap');
-            document.getElementById('rekap-pdf-area').classList.remove('hidden');
+            // Buka Window Baru dan Inject HTML Dokumen
+            const printWin = window.open('', '_blank', 'width=1100,height=700');
+            printWin.document.open();
+            printWin.document.write(printHTML);
+            printWin.document.close();
 
-            setTimeout(() => {
-                window.print();
-                document.body.classList.remove('printing-rekap');
-                document.getElementById('rekap-pdf-area').classList.add('hidden');
-            }, 200);
+            // Jalankan Perintah Print Setelah Window Murni Selesai Load
+            printWin.onload = function() {
+                printWin.focus();
+                printWin.print();
+                printWin.close();
+            };
         }
 
         async function savePinjaman(e) {
@@ -1328,7 +1308,6 @@
             });
         }
 
-        // FUNGSI HAPUS SEMUA LOG KHUSUS SUPERUSER
         async function clearAllAuditLogs() {
             if (!currentUser || currentUser.role !== 'SUPERUSER') {
                 alert('Akses Ditolak! Hanya Superuser yang dapat menghapus audit log.');
