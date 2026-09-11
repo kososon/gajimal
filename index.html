@@ -178,6 +178,7 @@
                                     <th class="p-2">T. Jabatan</th>
                                     <th class="p-2">T. Makan</th>
                                     <th class="p-2">T. Pulsa/Kdr</th>
+                                    <th class="p-2">T. Lain-Lain</th>
                                     <th class="p-2">Gratifikasi</th>
                                     <th class="p-2">THR</th>
                                     <th class="p-2">Pot. Gaji</th>
@@ -425,6 +426,9 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
+        // Plafon Maksimal Dasar BPJS Ketenagakerjaan (Sesuai Ketentuan Terbaru)
+        const MAX_DASAR_BPJS_JP = 10042300; // Limit Plafon JP
+
         // Global Application States
         let currentUser = null;
         let activeTab = 'dashboard';
@@ -512,7 +516,7 @@
                 if (bruto <= 136100000) return 0.25;
                 if (bruto <= 169700000) return 0.26;
                 if (bruto <= 221000000) return 0.27;
-                if (bruto <= 30200000) return 0.28;
+                if (bruto <= 302000000) return 0.28;
                 if (bruto <= 441900000) return 0.29;
                 if (bruto <= 593800000) return 0.30;
                 if (bruto <= 679900000) return 0.31;
@@ -661,7 +665,31 @@
             }
         }
 
-        // --- 6. FIREBASE DATA HANDLERS ---
+        // --- 6. HELPER KOMPONEN BPJS TK & KES ---
+        function getBpjsTkComponents(k) {
+            const gp = k.gajiPokok || 0;
+            if (k.autoBpjsTk !== false) {
+                return {
+                    jht: gp,
+                    jkk: gp,
+                    jkm: gp,
+                    jp: Math.min(gp, MAX_DASAR_BPJS_JP)
+                };
+            } else {
+                return {
+                    jht: k.dasarJht || 0,
+                    jkk: k.dasarJkk || 0,
+                    jkm: k.dasarJkm || 0,
+                    jp: Math.min(k.dasarJp || 0, MAX_DASAR_BPJS_JP)
+                };
+            }
+        }
+
+        function getDasarBpjsKes(k) {
+            return (k.autoBpjsKes !== false) ? (k.gajiPokok || 0) : (k.dasarBpjsKes || 0);
+        }
+
+        // --- 7. FIREBASE DATA HANDLERS ---
         async function loadGlobalData() {
             const karySnap = await db.collection('karyawan').get();
             globalKaryawan = karySnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -685,25 +713,17 @@
             populateDropdowns();
         }
 
-        function getDasarBpjsTK(k) {
-            return (k.autoBpjsTk !== false) ? (k.gajiPokok || 0) : (k.dasarBpjsTk || 0);
-        }
-
-        function getDasarBpjsKes(k) {
-            return (k.autoBpjsKes !== false) ? (k.gajiPokok || 0) : (k.dasarBpjsKes || 0);
-        }
-
         function renderDashboard() {
             const tbody = document.getElementById('table-dashboard-body');
             tbody.innerHTML = '';
             globalKaryawan.forEach(k => {
                 const gp = k.gajiPokok || 0;
-                const dasarTk = getDasarBpjsTK(k);
+                const tk = getBpjsTkComponents(k);
                 const dasarKes = getDasarBpjsKes(k);
-                const tunj = (k.tunjJab || 0) + (k.tunjMakan || 0) + (k.tunjPulsa || 0);
+                const tunj = (k.tunjJab || 0) + (k.tunjMakan || 0) + (k.tunjPulsa || 0) + (k.tunjLain || 0);
                 
                 const bpjsKesPribadi = dasarKes * 0.01;
-                const bpjsTkPribadi = dasarTk * 0.03;
+                const bpjsTkPribadi = (tk.jht * 0.02) + (tk.jp * 0.01);
                 const thp = (gp + tunj) - (bpjsKesPribadi + bpjsTkPribadi);
 
                 tbody.innerHTML += `
@@ -711,7 +731,7 @@
                         <td class="p-3 font-semibold text-slate-800">${k.nama}</td>
                         <td class="p-3">${k.jabatan}</td>
                         <td class="p-3 font-bold text-emerald-600">Rp ${formatRibuan(thp)}</td>
-                        <td class="p-3">Rp ${formatRibuan(dasarTk)}</td>
+                        <td class="p-3">Rp ${formatRibuan(tk.jht)}</td>
                         <td class="p-3">Rp ${formatRibuan(dasarKes)}</td>
                         <td class="p-3"><span class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-xs">Gross-Up (TER ${getTerCategory(k.ptkp)})</span></td>
                     </tr>
@@ -773,9 +793,13 @@
                 data.tunjJab = 0;
                 data.tunjMakan = 0;
                 data.tunjPulsa = 0;
+                data.tunjLain = 0;
                 data.autoBpjsTk = true;
                 data.autoBpjsKes = true;
-                data.dasarBpjsTk = 0;
+                data.dasarJht = 0;
+                data.dasarJkk = 0;
+                data.dasarJkm = 0;
+                data.dasarJp = 0;
                 data.dasarBpjsKes = 0;
                 await db.collection('karyawan').add(data);
                 await logAudit('TAMBAH_KARYAWAN', `Menambah karyawan baru: ${data.nama}`);
@@ -837,20 +861,24 @@
                         <td class="p-2"><input type="text" value="${formatRibuan(k.tunjJab || 0)}" onkeyup="formatInputRibuan(this)" class="w-20 border rounded p-1" id="tj-${k.id}"></td>
                         <td class="p-2"><input type="text" value="${formatRibuan(k.tunjMakan || 0)}" onkeyup="formatInputRibuan(this)" class="w-20 border rounded p-1" id="tm-${k.id}"></td>
                         <td class="p-2"><input type="text" value="${formatRibuan(k.tunjPulsa || 0)}" onkeyup="formatInputRibuan(this)" class="w-20 border rounded p-1" id="tp-${k.id}"></td>
+                        <td class="p-2"><input type="text" value="${formatRibuan(k.tunjLain || 0)}" onkeyup="formatInputRibuan(this)" class="w-20 border rounded p-1 text-blue-600" id="tl-${k.id}"></td>
                         <td class="p-2"><input type="text" value="0" onkeyup="formatInputRibuan(this)" class="w-20 border rounded p-1" id="gr-${k.id}"></td>
                         <td class="p-2"><input type="text" value="0" onkeyup="formatInputRibuan(this)" class="w-20 border rounded p-1" id="thr-${k.id}"></td>
                         <td class="p-2"><input type="text" value="0" onkeyup="formatInputRibuan(this)" class="w-20 border rounded p-1 text-red-600" id="pot-${k.id}"></td>
                         <td class="p-2 space-y-1">
                             <div class="flex items-center gap-1 text-[10px]">
                                 <input type="checkbox" id="auto-tk-${k.id}" ${isAutoTk ? 'checked' : ''} onchange="toggleBpjsInputs('${k.id}')">
-                                <label for="auto-tk-${k.id}">Auto BPJS TK</label>
+                                <label for="auto-tk-${k.id}" class="font-bold">Auto BPJS TK</label>
                             </div>
-                            <div id="container-dasar-tk-${k.id}" style="display: ${isAutoTk ? 'none' : 'block'};">
-                                <input type="text" value="${formatRibuan(k.dasarBpjsTk || 0)}" onkeyup="formatInputRibuan(this)" class="w-24 border rounded p-0.5 text-[10px]" placeholder="Dasar BPJS TK" id="dasar-tk-${k.id}">
+                            <div id="container-dasar-tk-${k.id}" style="display: ${isAutoTk ? 'none' : 'block'};" class="space-y-1">
+                                <input type="text" value="${formatRibuan(k.dasarJht || 0)}" onkeyup="formatInputRibuan(this)" class="w-24 border rounded p-0.5 text-[10px]" placeholder="Dasar JHT" id="dasar-jht-${k.id}">
+                                <input type="text" value="${formatRibuan(k.dasarJkk || 0)}" onkeyup="formatInputRibuan(this)" class="w-24 border rounded p-0.5 text-[10px]" placeholder="Dasar JKK" id="dasar-jkk-${k.id}">
+                                <input type="text" value="${formatRibuan(k.dasarJkm || 0)}" onkeyup="formatInputRibuan(this)" class="w-24 border rounded p-0.5 text-[10px]" placeholder="Dasar JKM" id="dasar-jkm-${k.id}">
+                                <input type="text" value="${formatRibuan(k.dasarJp || 0)}" onkeyup="formatInputRibuan(this)" class="w-24 border rounded p-0.5 text-[10px]" placeholder="Dasar JP" id="dasar-jp-${k.id}">
                             </div>
-                            <div class="flex items-center gap-1 text-[10px]">
+                            <div class="flex items-center gap-1 text-[10px] pt-1 border-t">
                                 <input type="checkbox" id="auto-kes-${k.id}" ${isAutoKes ? 'checked' : ''} onchange="toggleBpjsInputs('${k.id}')">
-                                <label for="auto-kes-${k.id}">Auto BPJS Kes</label>
+                                <label for="auto-kes-${k.id}" class="font-bold">Auto BPJS Kes</label>
                             </div>
                             <div id="container-dasar-kes-${k.id}" style="display: ${isAutoKes ? 'none' : 'block'};">
                                 <input type="text" value="${formatRibuan(k.dasarBpjsKes || 0)}" onkeyup="formatInputRibuan(this)" class="w-24 border rounded p-0.5 text-[10px]" placeholder="Dasar BPJS Kes" id="dasar-kes-${k.id}">
@@ -872,9 +900,13 @@
                 tunjJab: cleanNumber(document.getElementById(`tj-${id}`).value),
                 tunjMakan: cleanNumber(document.getElementById(`tm-${id}`).value),
                 tunjPulsa: cleanNumber(document.getElementById(`tp-${id}`).value),
+                tunjLain: cleanNumber(document.getElementById(`tl-${id}`).value),
                 autoBpjsTk: autoTk,
                 autoBpjsKes: autoKes,
-                dasarBpjsTk: autoTk ? gp : cleanNumber(document.getElementById(`dasar-tk-${id}`).value),
+                dasarJht: autoTk ? gp : cleanNumber(document.getElementById(`dasar-jht-${id}`).value),
+                dasarJkk: autoTk ? gp : cleanNumber(document.getElementById(`dasar-jkk-${id}`).value),
+                dasarJkm: autoTk ? gp : cleanNumber(document.getElementById(`dasar-jkm-${id}`).value),
+                dasarJp: autoTk ? Math.min(gp, MAX_DASAR_BPJS_JP) : Math.min(cleanNumber(document.getElementById(`dasar-jp-${id}`).value), MAX_DASAR_BPJS_JP),
                 dasarBpjsKes: autoKes ? gp : cleanNumber(document.getElementById(`dasar-kes-${id}`).value)
             };
 
@@ -892,12 +924,13 @@
 
             globalKaryawan.forEach(k => {
                 const gp = k.gajiPokok || 0;
-                const dasarTk = getDasarBpjsTK(k);
+                const tk = getBpjsTkComponents(k);
                 const dasarKes = getDasarBpjsKes(k);
-                const tunj = (k.tunjJab || 0) + (k.tunjMakan || 0) + (k.tunjPulsa || 0);
+                const tunj = (k.tunjJab || 0) + (k.tunjMakan || 0) + (k.tunjPulsa || 0) + (k.tunjLain || 0);
                 const brutoTHP = gp + tunj;
                 
-                const bpjsPerusahaan = (dasarTk * 0.0024) + (dasarTk * 0.0030) + (dasarKes * 0.04);
+                // BPJS Perusahaan (JKK 0.24% + JKM 0.30% + Kes 4%)
+                const bpjsPerusahaan = (tk.jkk * 0.0024) + (tk.jkm * 0.0030) + (dasarKes * 0.04);
                 const brutoAwalTanpaPajak = brutoTHP + bpjsPerusahaan;
                 
                 const calc = calculateGrossUpTER(k.ptkp, brutoAwalTanpaPajak);
@@ -979,13 +1012,13 @@
             if (!k) return;
 
             const gp = k.gajiPokok || 0;
-            const dasarTk = getDasarBpjsTK(k);
+            const tk = getBpjsTkComponents(k);
             const dasarKes = getDasarBpjsKes(k);
-            const tunj = (k.tunjJab || 0) + (k.tunjMakan || 0) + (k.tunjPulsa || 0);
+            const tunj = (k.tunjJab || 0) + (k.tunjMakan || 0) + (k.tunjPulsa || 0) + (k.tunjLain || 0);
             
             const bpjsKes = dasarKes * 0.01;
-            const bpjsJht = dasarTk * 0.02;
-            const bpjsJp = dasarTk * 0.01;
+            const bpjsJht = tk.jht * 0.02;
+            const bpjsJp = tk.jp * 0.01;
             const totalBpjsPribadi = bpjsKes + bpjsJht + bpjsJp;
 
             const brutoTHP = (gp + tunj) - totalBpjsPribadi;
@@ -1046,10 +1079,10 @@
             let csvContent = "data:text/csv;charset=utf-8,NIK,NAMA,NPWP,STATUS_PTKP,BRUTO_PAJAK_GROSSUP,PPH21_TER\n";
             globalKaryawan.forEach(k => {
                 const gp = k.gajiPokok || 0;
-                const dasarTk = getDasarBpjsTK(k);
+                const tk = getBpjsTkComponents(k);
                 const dasarKes = getDasarBpjsKes(k);
-                const bpjsPerusahaan = (dasarTk * 0.0024) + (dasarTk * 0.0030) + (dasarKes * 0.04);
-                const brutoAwal = gp + (k.tunjJab || 0) + bpjsPerusahaan;
+                const bpjsPerusahaan = (tk.jkk * 0.0024) + (tk.jkm * 0.0030) + (dasarKes * 0.04);
+                const brutoAwal = gp + (k.tunjJab || 0) + (k.tunjMakan || 0) + (k.tunjPulsa || 0) + (k.tunjLain || 0) + bpjsPerusahaan;
                 const calc = calculateGrossUpTER(k.ptkp, brutoAwal);
                 csvContent += `${k.nik},${k.nama},${k.npwp || ''},${k.ptkp},${calc.brutoPajakFinal},${calc.pph21GrossUp}\n`;
             });
