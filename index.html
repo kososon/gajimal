@@ -409,7 +409,21 @@
 
     <!-- Engine Application JavaScript -->
     <script>
-        // --- 1. FIREBASE CONFIGURATION (ASLI DISESUAIKAN) ---
+SAYA SUDAH UPDATE DATA DIREKTUR NAMANYA ABDUL HALEK KENAPA PADA CETAK SLIP DIREKTURNYA WILSON ?
+
+
+
+TANPA MERUBAH STRUKTUR AWAL , TOLONG DI UPDATE
+
+Penyebabnya adalah fungsi saveDirektur() sebelumnya hanya menyimpan ke variabel sementara JavaScript di browser, sehingga ketika Anda berpindah halaman atau me-render slip gaji, data tersebut kembali (reset) ke nama default WILSON. Selain itu, data direktur belum dibaca langsung dari database Firebase Firestore secara real-time.
+
+Berikut adalah perbaikan kode JavaScript lengkap tanpa mengubah struktur HTML maupun CSS awal. Perbaikan ini menambahkan penyimpanan langsung ke collection settings di Firebase Firestore dan otomatis memanggil nama Direktur terbaru saat halaman dibuka atau saat mencetak slip gaji.
+
+Bagian Kode JavaScript yang Perlu Diperbarui
+Ganti bagian <script> di dalam file index.html Anda dengan kode berikut:
+
+JavaScript
+        // --- 1. FIREBASE CONFIGURATION ---
         const firebaseConfig = {
             apiKey: "AIzaSyAn0GEPGWMEmDslzabkHR2DAnDFctHRjDw",
             authDomain: "payroll-multisarana.firebaseapp.com",
@@ -427,7 +441,7 @@
         let currentUser = null;
         let activeTab = 'dashboard';
         let globalKaryawan = [];
-        let globalDirektur = { nama: "WILSON", kota: "Pekanbaru" };
+        let globalDirektur = { nama: "ABDUL HALEK", kota: "Pekanbaru" };
 
         // --- 2. AUTHENTICATION LOGIC ---
         function handleLogin(e) {
@@ -515,8 +529,21 @@
 
         // --- 5. FIREBASE DATA HANDLERS ---
         async function loadGlobalData() {
+            // Load Karyawan
             const karySnap = await db.collection('karyawan').get();
             globalKaryawan = karySnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+            // Load Data Direktur dari Firebase Firestore
+            try {
+                const dirDoc = await db.collection('settings').doc('direktur').get();
+                if (dirDoc.exists) {
+                    globalDirektur = dirDoc.data();
+                    document.getElementById('dir-nama').value = globalDirektur.nama || '';
+                    document.getElementById('dir-kota').value = globalDirektur.kota || 'Pekanbaru';
+                }
+            } catch (err) {
+                console.error("Gagal memuat data direktur:", err);
+            }
 
             renderDashboard();
             renderKaryawanTable();
@@ -532,7 +559,7 @@
             globalKaryawan.forEach(k => {
                 const gp = k.gajiPokok || 0;
                 const tunj = (k.tunjJab || 0) + (k.tunjMakan || 0) + (k.tunjPulsa || 0);
-                const bpjsPribadi = gp * 0.04; // 1% Kes + 2% JHT + 1% JP
+                const bpjsPribadi = gp * 0.04;
                 const thp = (gp + tunj) - bpjsPribadi;
 
                 tbody.innerHTML += `
@@ -756,16 +783,30 @@
             document.getElementById('slip-bpjs-jp').innerText = `Rp ${formatRibuan(bpjsJp)}`;
             document.getElementById('slip-thp-total').innerText = `Rp ${formatRibuan(brutoTHP)}`;
             document.getElementById('slip-nama-karyawan-ttd').innerText = `( ${k.nama} )`;
-            document.getElementById('slip-nama-direktur').innerText = `( ${globalDirektur.nama} )`;
-            document.getElementById('slip-ttd-kota-tgl').innerText = `${globalDirektur.kota}, 31 Januari 2026`;
+            
+            // Render Nama Direktur & Kota secara Real-time
+            document.getElementById('slip-nama-direktur').innerText = `( ${globalDirektur.nama || 'ABDUL HALEK'} )`;
+            document.getElementById('slip-ttd-kota-tgl').innerText = `${globalDirektur.kota || 'Pekanbaru'}, 31 Januari 2026`;
         }
 
+        // --- SIMPAN PERMANEN DATA DIREKTUR KE FIREBASE ---
         async function saveDirektur(e) {
             e.preventDefault();
-            globalDirektur.nama = document.getElementById('dir-nama').value;
-            globalDirektur.kota = document.getElementById('dir-kota').value;
-            await logAudit('UPDATE_DIREKTUR', `Mengubah data direktur menjadi: ${globalDirektur.nama}`);
-            alert('Data Direktur berhasil disimpan!');
+            const namaDir = document.getElementById('dir-nama').value.trim();
+            const kotaDir = document.getElementById('dir-kota').value.trim();
+
+            globalDirektur.nama = namaDir;
+            globalDirektur.kota = kotaDir;
+
+            // Simpan ke Firebase Firestore agar tersimpan permanen
+            await db.collection('settings').doc('direktur').set({
+                nama: namaDir,
+                kota: kotaDir
+            });
+
+            await logAudit('UPDATE_DIREKTUR', `Mengubah data direktur menjadi: ${namaDir}`);
+            alert('Data Direktur berhasil disimpan secara permanen!');
+            renderSlipGaji();
         }
 
         function exportToCoretaxCSV() {
